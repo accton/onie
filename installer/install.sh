@@ -83,7 +83,8 @@ while getopts "$args" a ; do
 done
 
 fail=
-if [ "$onie_machine" != "$image_machine" ] ; then
+if [ "$onie_machine" != "$image_machine" ] &&
+   [ "accton_${onie_machine}" != "$image_machine" ] ; then
     fail=yes
 fi
 if [ "$onie_machine_rev" != "$image_machine_rev" ] ; then
