@@ -83,12 +83,14 @@ while getopts "$args" a ; do
 done
 
 fail=
-if [ "$onie_machine" != "$image_machine" ] ; then
+if [ "$onie_machine" != "$image_machine" ] &&
+   [ "accton_${onie_machine}" != "$image_machine" ] ; then
     fail=yes
 fi
-if [ "$onie_machine_rev" != "$image_machine_rev" ] ; then
-    fail=yes
-fi
+# Don't check revision for compatible with old r0a or r0b machines
+#if [ "$onie_machine_rev" != "$image_machine_rev" ] ; then
+#    fail=yes
+#fi
 if [ "$onie_arch" != "$image_arch" ] ; then
     fail=yes
 fi
