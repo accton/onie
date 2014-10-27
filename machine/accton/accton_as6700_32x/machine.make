@@ -9,12 +9,12 @@ UBOOT_IDENT_STRING = 1.4.0.11
 
 ONIE_ARCH ?= powerpc-softfloat
 
-VENDOR_REV ?= r0c
+VENDOR_REV ?= r01c
 
 # Translate hardware revision to ONIE hardware revision
-ifeq ($(VENDOR_REV),$(filter $(VENDOR_REV),r0a r0b))
+ifeq ($(VENDOR_REV),r01b)
   MACHINE_REV = 0
-else ifeq ($(VENDOR_REV),r0c)
+else ifeq ($(VENDOR_REV),r01c)
   MACHINE_REV = 1
 else
   $(warning Unknown VENDOR_REV '$(VENDOR_REV)' for MACHINE '$(MACHINE)')
