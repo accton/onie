@@ -34,10 +34,10 @@ index 54fcc81..98a08e5 100644
  COBJS-$(CONFIG_CMD_INI) += cmd_ini.o
 diff --git a/common/cmd_sys_eeprom.c b/common/cmd_sys_eeprom.c
 new file mode 100644
-index 0000000..a1824f4
+index 0000000..0a4ef3d
 --- /dev/null
 +++ b/common/cmd_sys_eeprom.c
-@@ -0,0 +1,1136 @@
+@@ -0,0 +1,1144 @@
 +/*
 + * See file CREDITS for list of people who contributed to this
 + * project.
@@ -1099,6 +1099,7 @@ index 0000000..a1824f4
 +
 +	for (i = 0; i < min(maccount, CONFIG_SYS_EEPROM_MAX_NUM_ETH_PORTS); i++) {
 +		if (is_valid_ether_addr(macbase)) {
++			char *env;
 +			char ethaddr[18];
 +			char enetvar[11];
 +
@@ -1106,11 +1107,18 @@ index 0000000..a1824f4
 +				macbase[0], macbase[1], macbase[2],
 +				macbase[3], macbase[4], macbase[5]);
 +			sprintf(enetvar, i ? "eth%daddr" : "ethaddr", i);
-+			/* Only initialize environment variables that are blank
-+			 * (i.e. have not yet been set)
++			/*
++			 * Initialize $ethaddr if it is blank or if the current
++			 * value is different from non-volatile board information
++			 * then change it.
 +			 */
-+			if (!getenv(enetvar))
++			env = getenv(enetvar);
++			if (!env) {
 +				setenv(enetvar, ethaddr);
++			} else {
++				if (strcmp(env, ethaddr))
++					setenv(enetvar, ethaddr);
++			}
 +
 +			macbase[5]++;
 +			if (macbase[5] == 0) {
