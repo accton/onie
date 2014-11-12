@@ -1,4 +1,4 @@
-# This series applies on GIT commit 206306740ef729713eb12b2f3c6ee79420fffb2d
+# This series applies on GIT commit 3ece8dea963285b974ce5d3bd2abaacc587d4802
 git-ignore.patch
 feature-config-repeatable.patch
 feature-dhcp-options.patch
@@ -6,6 +6,7 @@ feature-save-default-env-on-bad-crc.patch
 feature-populate-serial-number.patch
 feature-sys-eeprom-tlv.patch
 feature-fdt-environment-size.patch
+feature-u_boot_list-sorting.patch
 arch-powerpc-define-85xx-sdhc-polarity-select.patch
 arch-powerpc-fix-p2020-i2c-clock.patch
 arch-powerpc-fix-fsl-ddram-cfg.patch
