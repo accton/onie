@@ -4,7 +4,7 @@
 # Available variables are 'VENDOR_VERSION' and 'UBOOT_IDENT_STRING'.
 # e.g.,
 # VENDOR_VERSION = .00.01
-UBOOT_IDENT_STRING = 1.4.0.3
+UBOOT_IDENT_STRING = 1.4.0.4
 
 ONIE_ARCH ?= powerpc-softfloat
 
