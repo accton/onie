@@ -1,4 +1,4 @@
-# This series applies on GIT commit ee7932062a5a756533b8f552a62b9236b61fbb24
+# This series applies on GIT commit c92c5c0bb2c97ba6f5c106de6ab2bcaca61aca84
 git-ignore.patch
 arch-powerpc-emulated-lwsync.patch
 arch-powerpc-jtag.patch
@@ -15,3 +15,4 @@ driver-mfd-intel-centerton-lpc-sch.patch
 driver-support-new-broadcom-phys.patch
 driver-support-intel-avoton-ethernet-with-broadcom-phy.patch
 driver-i2c-i801-support-intel-avoton.patch
+driver-broadcom-ethernet-tg3.patch
