@@ -144,7 +144,7 @@ sub devices
 	makedev("loop${i}", "b", 7, ${i}, ${root}, ${disk}, 0660);
     }
 
-    print "Create the console, ttys, and serial devices: console, vcs, vcsa, tty, ttyS\n";
+    print "Create the console, ttys, and serial devices: console, vcs, vcsa, tty, ttyS, ttyACM\n";
     makedev("console", "c", 5, 1, ${root}, ${tty}, 0600);
     foreach my $i (0..15) {
 	makedev("tty${i}",  "c", 4, ${i}, ${root}, ${tty}, 0600);
@@ -155,6 +155,9 @@ sub devices
     symlink "./vcsa0", "${devdir}vcsa";
     foreach my $i (0..2) {
 	makedev("ttyS${i}", "c", 4, (${i}+64), ${root}, ${dial}, 0660);
+    }
+    foreach my $i (0..2) {
+	makedev("ttyACM${i}", "c", 166, ${i}, ${root}, ${dial}, 0660);
     }
 
     print "Basic file descriptors: stdin, stdout, stderr\n";
