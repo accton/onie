@@ -13,18 +13,18 @@ index 13d8cc3..0cf93a7 100644
  lib-$(CONFIG_SYS_EEPROM_DEVICE_MTD) += sys_eeprom_mtd.o
 diff --git a/miscutils/sys_eeprom_i2c_alt.c b/miscutils/sys_eeprom_i2c_alt.c
 new file mode 100644
-index 0000000..818e129
+index 0000000..51eb086
 --- /dev/null
 +++ b/miscutils/sys_eeprom_i2c_alt.c
-@@ -0,0 +1,176 @@
+@@ -0,0 +1,178 @@
 +#include "libbb.h"
 +#include "onie_tlvinfo.h"
 +#include "sys_eeprom.h"
 +
 +#define TTY_DEVICE                      "/dev/ttyACM0"
 +#define TTY_PROMPT                      "@bmc:"
-+#define TTY_BASE_TIMEOUT                100000
-+#define TTY_I2C_TIMEOUT                 30000
++#define TTY_BASE_TIMEOUT                500000
++#define TTY_I2C_TIMEOUT                 60000
 +#define MAXIMUM_TTY_BUFFER_LENGTH       (512 + SYS_EEPROM_SIZE * 3)
 +#define MAXIMUM_TTY_STRING_LENGTH       (MAXIMUM_TTY_BUFFER_LENGTH - 1)
 +
@@ -114,6 +114,7 @@ index 0000000..818e129
 +    if (tty_login() != 0)
 +    {
 +        printf("ERROR: Cannot login TTY device\n");
++        tty_close();
 +        return -1;
 +    }
 +
@@ -169,6 +170,7 @@ index 0000000..818e129
 +    if (tty_login() != 0)
 +    {
 +        printf("ERROR: Cannot login TTY device\n");
++        tty_close();
 +        return -1;
 +    }
 +
