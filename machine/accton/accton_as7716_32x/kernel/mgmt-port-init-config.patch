@@ -1,9 +1,9 @@
 Initail configurations for management port
 
-diff --git a/drivers/net/ethernet/broadcom/tg3-var/tg3.c b/drivers/net/ethernet/broadcom/tg3-var/tg3.c
-index 9293270..96cb1b9 100644
---- a/drivers/net/ethernet/broadcom/tg3-var/tg3.c
-+++ b/drivers/net/ethernet/broadcom/tg3-var/tg3.c
+diff --git a/drivers/net/ethernet/broadcom/tg3/tg3.c b/drivers/net/ethernet/broadcom/tg3/tg3.c
+index 87a7911..4ba76b8 100644
+--- a/drivers/net/ethernet/broadcom/tg3/tg3.c
++++ b/drivers/net/ethernet/broadcom/tg3/tg3.c
 @@ -1628,6 +1628,7 @@ static void tg3_mdio_config_5785(struct tg3 *tp)
  static void tg3_mdio_start(struct tg3 *tp)
  {

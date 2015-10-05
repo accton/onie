@@ -1,60 +1,306 @@
-support Broadcom Tigon3 variant Ethernet driver
+support Broadcom Tigon3 Ethernet driver
 
-Copyright (C) 2005-2015 Broadcom Corporation
-Copyright (C) 2015 david_yang <david_yang@accton.com>
-
-SPDX-License-Identifier:     GPL-2.0
-
-The original driver source was gotton from Broadcom Corporation.
-It was modified for building in linux-3.2.x.
-
-diff --git a/drivers/net/ethernet/broadcom/Kconfig b/drivers/net/ethernet/broadcom/Kconfig
-index f15e72e..f301b7d 100644
---- a/drivers/net/ethernet/broadcom/Kconfig
-+++ b/drivers/net/ethernet/broadcom/Kconfig
-@@ -107,6 +107,16 @@ config TIGON3
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called tg3.  This is recommended.
- 
-+config TIGON3_VARIANT
-+	tristate "Broadcom Tigon3 support (variant version)"
-+	depends on PCI
-+	select PHYLIB
-+	---help---
-+	  This driver supports Broadcom Tigon3 based gigabit Ethernet cards.
-+
-+	  To compile this driver as a module, choose M here: the module
-+	  will be called tg3.  This is recommended.
-+
- config BNX2X
- 	tristate "Broadcom NetXtremeII 10Gb support"
- 	depends on PCI
 diff --git a/drivers/net/ethernet/broadcom/Makefile b/drivers/net/ethernet/broadcom/Makefile
-index b789605..bdbffe5 100644
+index b789605..486c71c 100644
 --- a/drivers/net/ethernet/broadcom/Makefile
 +++ b/drivers/net/ethernet/broadcom/Makefile
-@@ -9,3 +9,4 @@ obj-$(CONFIG_CNIC) += cnic.o
+@@ -8,4 +8,4 @@ obj-$(CONFIG_BNX2) += bnx2.o
+ obj-$(CONFIG_CNIC) += cnic.o
  obj-$(CONFIG_BNX2X) += bnx2x/
  obj-$(CONFIG_SB1250_MAC) += sb1250-mac.o
- obj-$(CONFIG_TIGON3) += tg3.o
-+obj-$(CONFIG_TIGON3_VARIANT) += tg3-var/
-diff --git a/drivers/net/ethernet/broadcom/tg3-var/Makefile b/drivers/net/ethernet/broadcom/tg3-var/Makefile
+-obj-$(CONFIG_TIGON3) += tg3.o
++obj-$(CONFIG_TIGON3) += tg3/
+diff --git a/drivers/net/ethernet/broadcom/tg3/Makefile b/drivers/net/ethernet/broadcom/tg3/Makefile
 new file mode 100644
-index 0000000..aa96022
+index 0000000..22b6141
 --- /dev/null
-+++ b/drivers/net/ethernet/broadcom/tg3-var/Makefile
++++ b/drivers/net/ethernet/broadcom/tg3/Makefile
 @@ -0,0 +1,5 @@
 +#
-+# Makefile for Broadcom Tigon3 variant ethernet driver
++# Makefile for Broadcom Tigon3 ethernet driver
 +#
 +
-+obj-$(CONFIG_TIGON3_VARIANT) += tg3.o
-diff --git a/drivers/net/ethernet/broadcom/tg3-var/tg3.c b/drivers/net/ethernet/broadcom/tg3-var/tg3.c
++obj-$(CONFIG_TIGON3) += tg3.o
+diff --git a/drivers/net/ethernet/broadcom/tg3/nicext.h b/drivers/net/ethernet/broadcom/tg3/nicext.h
 new file mode 100644
-index 0000000..9293270
+index 0000000..6a3e466
 --- /dev/null
-+++ b/drivers/net/ethernet/broadcom/tg3-var/tg3.c
-@@ -0,0 +1,19893 @@
++++ b/drivers/net/ethernet/broadcom/tg3/nicext.h
+@@ -0,0 +1,268 @@
++/****************************************************************************
++ * Copyright(c) 2000-2013 Broadcom Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation.
++ *
++ * Name:        nicext.h
++ *
++ * Description: Broadcom Network Interface Card Extension (NICE) is an
++ *              extension to Linux NET device kernel mode drivers.
++ *              NICE is designed to provide additional functionalities,
++ *              such as receive packet intercept. To support Broadcom NICE,
++ *              the network device driver can be modified by adding an
++ *              device ioctl handler and by indicating receiving packets
++ *              to the NICE receive handler. Broadcom NICE will only be
++ *              enabled by a NICE-aware intermediate driver, such as
++ *              Broadcom Advanced Server Program Driver (BASP). When NICE
++ *              is not enabled, the modified network device drivers
++ *              functions exactly as other non-NICE aware drivers.
++ *
++ * Author:      Frankie Fan
++ *
++ * Created:     September 17, 2000
++ *
++ ****************************************************************************/
++#ifndef _nicext_h_
++#define _nicext_h_
++
++/*
++ * ioctl for NICE
++ */
++#define SIOCNICE                    SIOCDEVPRIVATE+7
++
++/*
++ * SIOCNICE:
++ *
++ * The following structure needs to be less than IFNAMSIZ (16 bytes) because
++ * we're overloading ifreq.ifr_ifru.
++ *
++ * If 16 bytes is not enough, we should consider relaxing this because
++ * this is no field after ifr_ifru in the ifreq structure. But we may
++ * run into future compatiability problem in case of changing struct ifreq.
++ */
++struct nice_req
++{
++    __u32 cmd;
++
++    union
++    {
++#ifdef __KERNEL__
++        /* cmd = NICE_CMD_SET_RX or NICE_CMD_GET_RX */
++        /* cmd = NICE_CMD_SET_RX_NAPI or NICE_CMD_GET_RX_NAPI */
++        struct
++        {
++            void (*nrqus1_rx)( struct sk_buff*, void* );
++            void* nrqus1_ctx;
++        } nrqu_nrqus1;
++
++        /* cmd = NICE_CMD_QUERY_SUPPORT */
++        struct
++        {
++            __u32 nrqus2_magic;
++            __u32 nrqus2_support_rx:1;
++            __u32 nrqus2_support_vlan:1;
++            __u32 nrqus2_support_get_speed:1;
++            __u32 nrqus2_support_rx_napi:1;
++        } nrqu_nrqus2;
++#endif
++
++        void *align_ptr;  /* this field is not used, it is to align the union */
++                          /* in 64-bit user mode */
++
++        /* cmd = NICE_CMD_GET_SPEED - in Mbps or 0 if link down */
++        /* cmd = NICE_CMD_ENABLE_EXT_LOOPBACK  - in Mbps */
++        struct
++        {
++            unsigned int nrqus3_speed;   /* 1000 = Gb, 100 = 100mbs, 10 = 10mbs */
++        } nrqu_nrqus3;
++
++        /* cmd = NICE_CMD_BLINK_LED */
++        struct
++        {
++            unsigned int nrqus4_blink_time; /* blink duration in seconds */
++        } nrqu_nrqus4;
++
++        /* cmd = NICE_CMD_REG_READ */
++        /* cmd = NICE_CMD_REG_WRITE */
++        /* cmd = NICE_CMD_MEM_READ */
++        /* cmd = NICE_CMD_MEM_WRITE */
++        /* cmd = NICE_CMD_REG_READ_DIRECT */
++        /* cmd = NICE_CMD_REG_WRITE_DIRECT */
++        /* cmd = NICE_CMD_CFG_READ32 */
++        /* cmd = NICE_CMD_CFG_READ16 */
++        /* cmd = NICE_CMD_CFG_READ8 */
++        /* cmd = NICE_CMD_CFG_WRITE32 */
++        /* cmd = NICE_CMD_CFG_WRITE16 */
++        /* cmd = NICE_CMD_CFG_WRITE8 */
++        /* cmd = NICE_CMD_REG_READ32_INDIRECT */
++        /* cmd = NICE_CMD_REG_WRITE32_INDIRECT */
++        /* cmd = NICE_CMD_APE_REG_READ32 */
++        /* cmd = NICE_CMD_APE_REG_WRITE32 */
++        struct
++        {
++            unsigned int nrqus5_offset; /* offset */
++            unsigned int nrqus5_data; /* value */
++        } nrqu_nrqus5;
++
++        /* cmd = NICE_CMD_INTERRUPT_TEST */
++        struct
++        {
++            unsigned int nrqus6_intr_test_result; /* 1 == pass */
++        } nrqu_nrqus6;
++
++        /* cmd = NICE_CMD_KMALLOC_PHYS */
++        /* cmd = NICE_CMD_KFREE_PHYS */
++        /* These commands allow the diagnostics app. to allocate and free */
++        /* PCI consistent memory for DMA tests */
++       struct
++        {
++            unsigned int nrqus7_size; /* size(bytes) to allocate, not used    */
++                                      /* when cmd is NICE_CMD_KFREE_PHYS.     */
++            __u32 nrqus7_phys_addr_lo;/* CPU physical address allocated or    */
++            __u32 nrqus7_phys_addr_hi;/* to be freed.                         */
++                                      /* PCI physical address is contained in */
++                                      /* the 1st 64 bit of the allocated      */
++                                      /* buffer. Use open("/dev/mem")/lseek() */
++                                      /* and read()/write() to a access       */
++                                      /* buffer in user space.                */
++                                      /* mmap() only works on x86.            */
++        } nrqu_nrqus7;
++
++        /* cmd = NICE_CMD_SET_WRITE_PROTECT */
++        struct
++        {
++            unsigned int nrqus8_data; /* 1 == set write protect, 0 == clear write protect */
++        } nrqu_nrqus8;
++
++        /* cmd = NICE_CMD_GET_STATS_BLOCK */
++        struct
++        {
++            void *nrqus9_useraddr; /* user space address for the stats block */
++            unsigned int nrqus9_size;/* size (in bytes)                      */
++                                     /* (0x6c0 for the whole block)          */
++        } nrqu_nrqus9;
++
++        /* cmd = NICE_CMD_LOOPBACK_TEST */
++        struct
++        {
++            unsigned char nrqus10_looptype;
++            unsigned char nrqus10_loopspeed;
++        } nrqu_nrqus10;
++
++         /* cmd = NICE_CMD_KMAP_PHYS/KUNMAP_PHYS */
++        struct
++        {
++            int nrqus11_rw;       /* direction                            */
++        void *nrqus11_uaddr;      /* ptr to mem allocated in user space   */
++                                      /* when cmd is NICE_CMD_KFREE_PHYS.     */
++            __u32 nrqus11_phys_addr_lo;/* CPU physical address allocated or    */
++            __u32 nrqus11_phys_addr_hi;/* to be freed.                         */
++                                      /* PCI physical address is contained in */
++                                      /* the 1st 64 bit of the allocated      */
++                                      /* buffer. Use open("/dev/mem")/lseek() */
++                                      /* and read()/write() to a access       */
++                                      /* buffer in user space.                */
++                                      /* mmap() only works on x86.            */
++        } nrqu_nrqus11;
++   } nrq_nrqu;
++};
++
++#define nrq_rx           nrq_nrqu.nrqu_nrqus1.nrqus1_rx
++#define nrq_ctx          nrq_nrqu.nrqu_nrqus1.nrqus1_ctx
++#define nrq_support_rx   nrq_nrqu.nrqu_nrqus2.nrqus2_support_rx
++#define nrq_magic        nrq_nrqu.nrqu_nrqus2.nrqus2_magic
++#define nrq_support_vlan nrq_nrqu.nrqu_nrqus2.nrqus2_support_vlan
++#define nrq_support_get_speed nrq_nrqu.nrqu_nrqus2.nrqus2_support_get_speed
++#define nrq_support_rx_napi nrq_nrqu.nrqu_nrqus2.nrqus2_support_rx_napi
++#define nrq_speed        nrq_nrqu.nrqu_nrqus3.nrqus3_speed
++#define nrq_blink_time   nrq_nrqu.nrqu_nrqus4.nrqus4_blink_time
++#define nrq_offset       nrq_nrqu.nrqu_nrqus5.nrqus5_offset
++#define nrq_data         nrq_nrqu.nrqu_nrqus5.nrqus5_data
++#define nrq_intr_test_result  nrq_nrqu.nrqu_nrqus6.nrqus6_intr_test_result
++
++#define nrq_size         nrq_nrqu.nrqu_nrqus7.nrqus7_size
++#define nrq_phys_addr_lo nrq_nrqu.nrqu_nrqus7.nrqus7_phys_addr_lo
++#define nrq_phys_addr_hi nrq_nrqu.nrqu_nrqus7.nrqus7_phys_addr_hi
++
++#define nrq_rw           nrq_nrqu.nrqu_nrqus11.nrqus11_rw
++#define nrq_puaddr   nrq_nrqu.nrqu_nrqus11.nrqus11_uaddr
++#define nrq_phys_add_lo nrq_nrqu.nrqu_nrqus11.nrqus11_phys_addr_lo
++#define nrq_phys_add_hi nrq_nrqu.nrqu_nrqus11.nrqus11_phys_addr_hi
++
++#define nrq_write_protect nrq_nrqu.nrqu_nrqus8.nrqus8_data
++#define nrq_stats_useraddr nrq_nrqu.nrqu_nrqus9.nrqus9_useraddr
++#define nrq_stats_size    nrq_nrqu.nrqu_nrqus9.nrqus9_size
++
++#define nrq_looptype    nrq_nrqu.nrqu_nrqus10.nrqus10_looptype
++#define nrq_loopspeed   nrq_nrqu.nrqu_nrqus10.nrqus10_loopspeed
++
++/*
++ * magic constants
++ */
++#define NICE_REQUESTOR_MAGIC            0x4543494E // NICE in ascii
++#define NICE_DEVICE_MAGIC               0x4E494345 // ECIN in ascii
++
++#define NICE_LOOPBACK_TESTTYPE_MAC      0x1
++#define NICE_LOOPBACK_TESTTYPE_PHY      0x2
++#define NICE_LOOPBACK_TESTTYPE_EXT      0x4
++
++#define NICE_LOOPBACK_TEST_SPEEDMASK    0x3
++#define NICE_LOOPBACK_TEST_10MBPS       0x1
++#define NICE_LOOPBACK_TEST_100MBPS      0x2
++#define NICE_LOOPBACK_TEST_1000MBPS     0x3
++
++
++/*
++ * command field
++ */
++typedef enum {
++    NICE_CMD_QUERY_SUPPORT         = 0x00000001,
++    NICE_CMD_SET_RX                = 0x00000002,
++    NICE_CMD_GET_RX                = 0x00000003,
++    NICE_CMD_GET_SPEED             = 0x00000004,
++    NICE_CMD_BLINK_LED             = 0x00000005,
++    NICE_CMD_DIAG_SUSPEND          = 0x00000006,
++    NICE_CMD_DIAG_RESUME           = 0x00000007,
++    NICE_CMD_REG_READ              = 0x00000008,
++    NICE_CMD_REG_WRITE             = 0x00000009,
++    NICE_CMD_MEM_READ              = 0x0000000a,
++    NICE_CMD_MEM_WRITE             = 0x0000000b,
++    NICE_CMD_ENABLE_MAC_LOOPBACK   = 0x0000000c,
++    NICE_CMD_DISABLE_MAC_LOOPBACK  = 0x0000000d,
++    NICE_CMD_ENABLE_PHY_LOOPBACK   = 0x0000000e,
++    NICE_CMD_DISABLE_PHY_LOOPBACK  = 0x0000000f,
++    NICE_CMD_INTERRUPT_TEST        = 0x00000010,
++    NICE_CMD_SET_WRITE_PROTECT     = 0x00000011,
++    NICE_CMD_SET_RX_NAPI           = 0x00000012,
++    NICE_CMD_GET_RX_NAPI           = 0x00000013,
++    NICE_CMD_ENABLE_EXT_LOOPBACK   = 0x00000014,
++    NICE_CMD_DISABLE_EXT_LOOPBACK  = 0x00000015,
++    NICE_CMD_CFG_READ32            = 0x00000016,
++    NICE_CMD_CFG_READ16            = 0x00000017,
++    NICE_CMD_CFG_READ8             = 0x00000018,
++    NICE_CMD_CFG_WRITE32           = 0x00000019,
++    NICE_CMD_CFG_WRITE16           = 0x0000001a,
++    NICE_CMD_CFG_WRITE8            = 0x0000001b,
++
++    NICE_CMD_REG_READ_DIRECT       = 0x0000001e,
++    NICE_CMD_REG_WRITE_DIRECT      = 0x0000001f,
++    NICE_CMD_RESET                 = 0x00000020,
++    NICE_CMD_KMALLOC_PHYS          = 0x00000021,
++    NICE_CMD_KFREE_PHYS            = 0x00000022,
++    NICE_CMD_GET_STATS_BLOCK       = 0x00000023,
++    NICE_CMD_CLR_STATS_BLOCK       = 0x00000024,
++    NICE_CMD_LOOPBACK_TEST         = 0x00000025,
++    NICE_CMD_KMAP_PHYS             = 0x00000026,
++    NICE_CMD_KUNMAP_PHYS           = 0x00000027,
++    NICE_CMD_QUERY_SUPPORT2        = 0x00000028,
++    NICE_CMD_REG_READ2             = 0x00000029,
++    NICE_CMD_REG_READ32_INDIRECT   = 0x00000030,
++    NICE_CMD_REG_WRITE32_INDIRECT  = 0x00000031,
++    NICE_CMD_APE_REG_READ32        = 0x00000032,
++    NICE_CMD_APE_REG_WRITE32       = 0x00000033,
++    NICE_CMD_MAX
++} nice_cmds;
++
++#endif  // _nicext_h_
+diff --git a/drivers/net/ethernet/broadcom/tg3/tg3.c b/drivers/net/ethernet/broadcom/tg3/tg3.c
+new file mode 100644
+index 0000000..87a7911
+--- /dev/null
++++ b/drivers/net/ethernet/broadcom/tg3/tg3.c
+@@ -0,0 +1,19897 @@
 +/*
 + * tg3.c: Broadcom Tigon3 ethernet driver.
 + *
@@ -199,14 +445,14 @@ index 0000000..9293270
 +#define tg3_flag_clear(tp, flag)			\
 +	_tg3_flag_clear(TG3_FLAG_##flag, (tp)->tg3_flags)
 +
-+#define DRV_MODULE_NAME		"tg3"
++#define DRV_MODULE_NAME		"tg3d"
 +#define TG3_MAJ_NUM			3
 +#define TG3_MIN_NUM			137
-+#define TG3_REVISION		"h"
++#define TG3_REVISION		"i"
 +#define DRV_MODULE_VERSION	\
 +	__stringify(TG3_MAJ_NUM) "." __stringify(TG3_MIN_NUM)\
 +	TG3_REVISION
-+#define DRV_MODULE_RELDATE	"Dec 20, 2014"
++#define DRV_MODULE_RELDATE	"March 05, 2015"
 +#define RESET_KIND_SHUTDOWN	0
 +#define RESET_KIND_INIT		1
 +#define RESET_KIND_SUSPEND	2
@@ -353,7 +599,7 @@ index 0000000..9293270
 +#define FIRMWARE_TG3TSO5	"tigon/tg3_tso5.bin"
 +
 +static char version[] __devinitdata =
-+	DRV_MODULE_NAME ".c:v" DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")\n";
++	DRV_MODULE_NAME ".c:v" DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")(tg3 w/patch tg3d-0.17)\n";
 +
 +MODULE_AUTHOR("David S. Miller (davem@redhat.com) and Jeff Garzik (jgarzik@pobox.com)");
 +MODULE_DESCRIPTION("Broadcom Tigon3 ethernet driver");
@@ -6428,6 +6674,9 @@ index 0000000..9293270
 +{
 +	u32 val;
 +	int err;
++
++	if (tg3d_setup_loopback(tp))
++		return 0;
 +
 +	if (tp->phy_flags & TG3_PHYFLG_PHY_SERDES)
 +		err = tg3_setup_fiber_phy(tp, force_reset);
@@ -15143,7 +15392,7 @@ index 0000000..9293270
 +
 +	default:
 +		/* do nothing */
-+		break;
++		return tg3d_ioctl(tp, dev, ifr, cmd);
 +	}
 +	return -EOPNOTSUPP;
 +}
@@ -19948,12 +20197,13 @@ index 0000000..9293270
 +
 +module_init(tg3_init);
 +module_exit(tg3_cleanup);
-diff --git a/drivers/net/ethernet/broadcom/tg3-var/tg3.h b/drivers/net/ethernet/broadcom/tg3-var/tg3.h
++#include "tgg.c"
+diff --git a/drivers/net/ethernet/broadcom/tg3/tg3.h b/drivers/net/ethernet/broadcom/tg3/tg3.h
 new file mode 100644
-index 0000000..55a879a
+index 0000000..988a449
 --- /dev/null
-+++ b/drivers/net/ethernet/broadcom/tg3-var/tg3.h
-@@ -0,0 +1,3596 @@
++++ b/drivers/net/ethernet/broadcom/tg3/tg3.h
+@@ -0,0 +1,3598 @@
 +/* $Id$
 + * tg3.h: Definitions for Broadcom Tigon3 ethernet driver.
 + *
@@ -23180,6 +23430,7 @@ index 0000000..55a879a
 +	TG3_FLAG_NUMBER_OF_FLAGS,	/* Last entry in enum TG3_FLAGS */
 +};
 +
++#include "tgg.h"
 +struct tg3 {
 +	/* begin "general, frequently-used members" cacheline section */
 +
@@ -23533,6 +23784,7 @@ index 0000000..55a879a
 +	u64				recoverable_err;
 +	u64				unrecoverable_err;
 +#endif
++	struct tg3d_diag		diag;
 +};
 +
 +/* Accessor macros for chip and asic attributes
@@ -23550,13 +23802,13 @@ index 0000000..55a879a
 +	((tp)->pci_chip_rev_id >> 8)
 +
 +#endif /* !(_T3_H) */
-diff --git a/drivers/net/ethernet/broadcom/tg3-var/tg3_compat.h b/drivers/net/ethernet/broadcom/tg3-var/tg3_compat.h
+diff --git a/drivers/net/ethernet/broadcom/tg3/tg3_compat.h b/drivers/net/ethernet/broadcom/tg3/tg3_compat.h
 new file mode 100644
-index 0000000..a6cca72
+index 0000000..1e01125
 --- /dev/null
-+++ b/drivers/net/ethernet/broadcom/tg3-var/tg3_compat.h
-@@ -0,0 +1,2144 @@
-+/* Copyright (C) 2008-2015 Broadcom Corporation. */
++++ b/drivers/net/ethernet/broadcom/tg3/tg3_compat.h
+@@ -0,0 +1,2136 @@
++/* Copyright (C) 2008-2013 Broadcom Corporation. */
 +
 +#ifdef CONFIG_X86
 +#undef NET_IP_ALIGN
@@ -24557,19 +24809,11 @@ index 0000000..a6cca72
 +#endif
 +
 +#ifndef NETDEV_TX_BUSY
-+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,32)
-+#define NETDEV_TX_BUSY 0x1
-+#else
-+#define NETDEV_TX_BUSY 0x10
-+#endif
++#define NETDEV_TX_BUSY 1
 +#endif
 +
 +#ifndef NETDEV_TX_LOCKED
-+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,32)
 +#define NETDEV_TX_LOCKED -1
-+#else
-+#define NETDEV_TX_LOCKED 0x20
-+#endif
 +#endif
 +
 +#ifndef CHECKSUM_PARTIAL
@@ -25700,13 +25944,13 @@ index 0000000..a6cca72
 +#ifndef SIOCGHWTSTAMP
 +#define SIOCGHWTSTAMP 0x89b1
 +#endif
-diff --git a/drivers/net/ethernet/broadcom/tg3-var/tg3_compat2.h b/drivers/net/ethernet/broadcom/tg3-var/tg3_compat2.h
+diff --git a/drivers/net/ethernet/broadcom/tg3/tg3_compat2.h b/drivers/net/ethernet/broadcom/tg3/tg3_compat2.h
 new file mode 100644
-index 0000000..07c968d
+index 0000000..e62745f
 --- /dev/null
-+++ b/drivers/net/ethernet/broadcom/tg3-var/tg3_compat2.h
++++ b/drivers/net/ethernet/broadcom/tg3/tg3_compat2.h
 @@ -0,0 +1,518 @@
-+/* Copyright (C) 2009-2015 Broadcom Corporation. */
++/* Copyright (C) 2009-2013 Broadcom Corporation. */
 +
 +#ifndef BCM_HAS_PCI_PCIE_CAP
 +static inline int pci_pcie_cap(struct pci_dev *pdev)
@@ -26224,13 +26468,13 @@ index 0000000..07c968d
 +	return dest;
 +}
 +#endif
-diff --git a/drivers/net/ethernet/broadcom/tg3-var/tg3_firmware.h b/drivers/net/ethernet/broadcom/tg3-var/tg3_firmware.h
+diff --git a/drivers/net/ethernet/broadcom/tg3/tg3_firmware.h b/drivers/net/ethernet/broadcom/tg3/tg3_firmware.h
 new file mode 100644
-index 0000000..a5a4928
+index 0000000..eff7b9d
 --- /dev/null
-+++ b/drivers/net/ethernet/broadcom/tg3-var/tg3_firmware.h
++++ b/drivers/net/ethernet/broadcom/tg3/tg3_firmware.h
 @@ -0,0 +1,1012 @@
-+/* Copyright (C) 2009-2015 Broadcom Corporation. */
++/* Copyright (C) 2009-2013 Broadcom Corporation. */
 +
 +#ifdef NETIF_F_TSO
 +#define TG3_TSO_SUPPORT	1
@@ -27242,11 +27486,11 @@ index 0000000..a5a4928
 +#define tg3_priv_release_firmware(x)
 +
 +#endif /* BCM_HAS_REQUEST_FIRMWARE */
-diff --git a/drivers/net/ethernet/broadcom/tg3-var/tg3_flags.h b/drivers/net/ethernet/broadcom/tg3-var/tg3_flags.h
+diff --git a/drivers/net/ethernet/broadcom/tg3/tg3_flags.h b/drivers/net/ethernet/broadcom/tg3/tg3_flags.h
 new file mode 100644
 index 0000000..5958197
 --- /dev/null
-+++ b/drivers/net/ethernet/broadcom/tg3-var/tg3_flags.h
++++ b/drivers/net/ethernet/broadcom/tg3/tg3_flags.h
 @@ -0,0 +1,83 @@
 +#define BCM_HAS_BOOL
 +#define BCM_HAS_LE32
@@ -27331,3 +27575,517 @@ index 0000000..5958197
 +#define BCM_HAS_DMA_UNMAP_ADDR_SET
 +#define BCM_HAS_DMA_ZALLOC_COHERENT
 +#define BCM_HAS_IEEE1588_SUPPORT
+diff --git a/drivers/net/ethernet/broadcom/tg3/tgg.c b/drivers/net/ethernet/broadcom/tg3/tgg.c
+new file mode 100644
+index 0000000..c1f835d
+--- /dev/null
++++ b/drivers/net/ethernet/broadcom/tg3/tgg.c
+@@ -0,0 +1,477 @@
++/*
++ * tgg.c: tg3diag Broadcom Tigon3 ethernet driver diag extension.
++ *
++ * Copyright (C) 2007-2013 Broadcom Corporation.
++ *
++ */
++
++#include <linux/version.h>
++#if (LINUX_VERSION_CODE < 0x020613)
++#include <linux/config.h>
++#endif
++
++#if (LINUX_VERSION_CODE < 0x020500)
++#if defined(CONFIG_MODVERSIONS) && defined(MODULE) && !defined(MODVERSIONS)
++#define MODVERSIONS
++#include <linux/modversions.h>
++#endif
++#endif
++#include <linux/module.h>
++
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/compiler.h>
++#include <linux/slab.h>
++#include <linux/delay.h>
++#include <linux/in.h>
++#include <linux/init.h>
++#include <linux/ioport.h>
++#include <linux/pci.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/skbuff.h>
++#include <linux/ethtool.h>
++#include <linux/mii.h>
++#include <linux/if_vlan.h>
++#include <linux/ip.h>
++#include <linux/tcp.h>
++#if (LINUX_VERSION_CODE >= 0x020600)
++#include <linux/workqueue.h>
++#endif
++#include <linux/prefetch.h>
++#if (LINUX_VERSION_CODE >= 0x020600)
++#include <linux/dma-mapping.h>
++#endif
++#include <net/checksum.h>
++
++#include <asm/io.h>
++#include <asm/byteorder.h>
++#include <asm/uaccess.h>
++
++#ifdef CONFIG_SPARC64
++#include <asm/idprom.h>
++#include <asm/oplib.h>
++#include <asm/pbm.h>
++#endif
++
++#if defined(CONFIG_VLAN_8021Q) || defined(CONFIG_VLAN_8021Q_MODULE)
++#define TG3_VLAN_TAG_USED 1
++#else
++#define TG3_VLAN_TAG_USED 0
++#endif
++
++#include "tg3.h"
++
++#define RESET_KIND_SHUTDOWN	0
++#define RESET_KIND_INIT		1
++#define RESET_KIND_SUSPEND	2
++
++
++/*
++ * Broadcom NIC Extension support
++ * -ffan
++ */
++#include "nicext.h"
++
++/*
++NICE
++*/
++int
++tg3d_ioctl(struct tg3 *tp, struct net_device *dev, struct ifreq *ifr, int cmd)
++{
++	struct nice_req *nrq;
++	int err;
++
++	if (cmd != SIOCNICE)
++		return -EOPNOTSUPP;
++	if (!netif_running(dev))
++		return -EINVAL;
++	if (!capable(CAP_NET_ADMIN))
++		return -EPERM;
++
++	nrq = (struct nice_req *)&ifr->ifr_ifru;
++
++	switch (nrq->cmd) {
++	case NICE_CMD_QUERY_SUPPORT:
++		nrq->nrq_magic = NICE_DEVICE_MAGIC;
++		nrq->nrq_support_rx = 1;
++		nrq->nrq_support_vlan = 1;
++		nrq->nrq_support_get_speed = 1;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++		nrq->nrq_support_rx_napi = 1;
++#endif
++		return 0;
++
++	case NICE_CMD_QUERY_SUPPORT2:
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	case NICE_CMD_SET_RX_NAPI:
++#else
++	case NICE_CMD_SET_RX:
++#endif
++		return 0;
++
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	case NICE_CMD_GET_RX_NAPI:
++#else
++	case NICE_CMD_GET_RX:
++#endif
++		return 0;
++
++	case NICE_CMD_GET_SPEED:
++		nrq->nrq_speed = tp->link_config.active_speed;
++		return 0;
++
++	case NICE_CMD_REG_READ2:
++		/* Make sure the offset is within range. */
++		if (nrq->nrq_offset >= pci_resource_len(tp->pdev, 0))
++			return -EINVAL;
++
++		/* Make sure the offset is 4-byte aligned. */
++		if (nrq->nrq_offset & 0x00000003)
++			return -EINVAL;
++
++		nrq->nrq_data = (tp->read32)(tp, nrq->nrq_offset);
++		return 0;
++
++	case NICE_CMD_REG_WRITE:
++		/* Make sure the offset is within range. */
++		if (nrq->nrq_offset >= pci_resource_len(tp->pdev, 0))
++			return -EINVAL;
++
++		/* Make sure the offset is 4-byte aligned. */
++		if (nrq->nrq_offset & 0x00000003)
++			return -EINVAL;
++
++		(tp->write32)(tp, nrq->nrq_offset, nrq->nrq_data);
++		return 0;
++
++	case NICE_CMD_REG_READ32_INDIRECT:
++		/* Make sure the offset is 4-byte aligned. */
++		if (nrq->nrq_offset & 0x00000003)
++			return -EINVAL;
++		nrq->nrq_data = tg3_read_indirect_reg32(tp, nrq->nrq_offset);
++		return 0;
++
++	case NICE_CMD_REG_WRITE32_INDIRECT:
++		/* Make sure the offset is 4-byte aligned. */
++		if (nrq->nrq_offset & 0x00000003)
++			return -EINVAL;
++		tg3_write_indirect_reg32(tp, nrq->nrq_offset, nrq->nrq_data);
++		return 0;
++
++	case NICE_CMD_CFG_READ32:
++	if (nrq->nrq_offset >= 0x100)
++		return -EINVAL;
++
++	/* Make sure the offset is 4-byte aligned. */
++	if (nrq->nrq_offset & 0x00000003)
++		return -EINVAL;
++
++	pci_read_config_dword(tp->pdev, nrq->nrq_offset, (u32 *)&nrq->nrq_data);
++		return 0;
++
++	case NICE_CMD_CFG_READ16:
++	if (nrq->nrq_offset >= 0x100)
++		return -EINVAL;
++
++	/* Make sure the offset is 2-byte aligned. */
++	if (nrq->nrq_offset & 0x00000001)
++		return -EINVAL;
++
++	pci_read_config_word(tp->pdev, nrq->nrq_offset, (u16 *)&nrq->nrq_data);
++		return 0;
++
++	case NICE_CMD_CFG_READ8:
++	if (nrq->nrq_offset >= 0x100)
++		return -EINVAL;
++
++	pci_read_config_byte(tp->pdev, nrq->nrq_offset, (u8 *)&nrq->nrq_data);
++		return 0;
++
++	case NICE_CMD_CFG_WRITE32:
++	if (nrq->nrq_offset >= 0x100)
++		return -EINVAL;
++
++	/* Make sure the offset is 4-byte aligned. */
++	if (nrq->nrq_offset & 0x00000003)
++		return -EINVAL;
++
++	pci_write_config_dword(tp->pdev, nrq->nrq_offset, (u32)nrq->nrq_data);
++		return 0;
++
++	case NICE_CMD_CFG_WRITE16:
++	if (nrq->nrq_offset >= 0x100)
++		return -EINVAL;
++
++	/* Make sure the offset is 2-byte aligned. */
++	if (nrq->nrq_offset & 0x00000001)
++		return -EINVAL;
++
++	pci_write_config_word(tp->pdev, nrq->nrq_offset, (u16)nrq->nrq_data);
++		return 0;
++
++	case NICE_CMD_CFG_WRITE8:
++	if (nrq->nrq_offset >= 0x100)
++		return -EINVAL;
++
++	pci_write_config_byte(tp->pdev, nrq->nrq_offset, (u8)nrq->nrq_data);
++		return 0;
++
++	case NICE_CMD_APE_REG_READ32:
++		/* The APE must be present to read APE registers. */
++		if (!tg3_flag(tp, ENABLE_APE))
++			return -EINVAL;
++
++		/* Make sure the offset is within range. */
++		if (nrq->nrq_offset >= pci_resource_len(tp->pdev, 2))
++			return -EINVAL;
++
++		/* Make sure the offset is 4-byte aligned. */
++		if (nrq->nrq_offset & 0x00000003)
++			return -EINVAL;
++
++		nrq->nrq_data = tg3_ape_read32(tp, nrq->nrq_offset);
++		return 0;
++
++	case NICE_CMD_APE_REG_WRITE32:
++		/* The APE must be present to write to APE registers. */
++		if (!tg3_flag(tp, ENABLE_APE))
++			return -EINVAL;
++
++		/* Make sure the offset is within range. */
++		if (nrq->nrq_offset >= pci_resource_len(tp->pdev, 2))
++			return -EINVAL;
++
++		/* Make sure the offset is 4-byte aligned. */
++		if (nrq->nrq_offset & 0x00000003)
++			return -EINVAL;
++
++		tg3_ape_write32(tp, nrq->nrq_offset, nrq->nrq_data);
++		return 0;
++
++	case NICE_CMD_DIAG_SUSPEND:
++		if (tp->diag.flags & TG4_SUSPEND)
++			return 0;
++		tg3_netif_stop(tp);
++		tg3_full_lock(tp, 1);
++		tp->diag.flags |= TG4_SUSPEND;
++		tg3_halt(tp, RESET_KIND_SUSPEND, 1);
++		udelay(40);
++		err = tg3_nvram_lock(tp);
++		tg3_halt_cpu(tp, RX_CPU_BASE);
++		if (!tg3_flag(tp, 5705_PLUS))
++			tg3_halt_cpu(tp, TX_CPU_BASE);
++		if (!err)
++			tg3_nvram_unlock(tp);
++
++		udelay(100);
++		if (tp->phy_flags & TG3_PHYFLG_MII_SERDES)
++			tg3_phy_reset(tp);
++		udelay(200);
++		tg3_full_unlock(tp);
++
++		return 0;
++
++	case NICE_CMD_DIAG_RESUME:
++		if (!(tp->diag.flags & TG4_SUSPEND))
++			return 0;
++		tg3_full_lock(tp, 0);
++		tp->diag.flags &= ~TG4_SUSPEND;
++		tg3_flag_set(tp, INIT_COMPLETE);
++		tg3_restart_hw(tp, 1);
++		udelay(100);
++		tg3_netif_start(tp);
++		tg3_full_unlock(tp);
++
++		return 0;
++
++	case NICE_CMD_RESET:
++		if (tp->diag.flags & TG4_SUSPEND) {
++			tg3_netif_start(tp);
++			udelay(10);
++		}
++
++		tg3_netif_stop(tp);
++		tg3_timer_stop(tp);
++		tg3_full_lock(tp, 1);
++
++		tg3_disable_ints(tp);
++		tp->diag.flags = 0;
++		tg3_reset_hw(tp, 1);
++		udelay(100);
++
++		tg3_timer_start(tp);
++		tg3_full_unlock(tp);
++		tg3_netif_start(tp);
++
++		return 0;
++
++	case NICE_CMD_INTERRUPT_TEST:
++		if (!tg3_test_interrupt(tp))
++			nrq->nrq_intr_test_result = 1;
++		else
++			nrq->nrq_intr_test_result = 0;
++		return 0;
++
++	case NICE_CMD_ENABLE_MAC_LOOPBACK:
++		if (tp->diag.flags & TG4_MAC_LB)
++			return -EINVAL;
++
++		/* HW errata - mac loopback fails in some cases on 5780.
++		 * Normal traffic and PHY loopback are not affected by
++		 * errata.
++		 *
++		 * Also, mac loopback mode is deprecated for newer devices.
++		 */
++		if (tg3_asic_rev(tp) == ASIC_REV_5780 ||
++		    tg3_flag(tp, CPMU_PRESENT))
++			return -EINVAL;
++
++		if (tp->diag.flags & TG4_SUSPEND)
++			tg3_netif_start(tp);
++
++		spin_lock_bh(&tp->lock);
++		tg3_mac_loopback(tp, true);
++		tp->diag.flags |= TG4_MAC_LB;
++		netif_carrier_on(tp->dev);
++		spin_unlock_bh(&tp->lock);
++
++		return 0;
++
++	case NICE_CMD_DISABLE_MAC_LOOPBACK:
++		if (!(tp->diag.flags & TG4_MAC_LB))
++			return -EINVAL;
++
++		spin_lock_bh(&tp->lock);
++		tp->diag.flags &= ~TG4_MAC_LB;
++		tg3_mac_loopback(tp, false);
++		tg3_setup_phy(tp, 1);
++		spin_unlock_bh(&tp->lock);
++
++		return 0;
++
++	case NICE_CMD_ENABLE_PHY_LOOPBACK:
++		if (tp->diag.flags & TG4_MSK_LB)
++			return -EINVAL;
++
++		tg3_full_lock(tp, 0);
++		netif_carrier_off(tp->dev);
++
++		tp->diag.flags |= TG4_PHY_LB;
++		tg3_phy_lpbk_set(tp, 0, false);
++
++		tg3_full_unlock(tp);
++
++		return 0;
++
++	case NICE_CMD_DISABLE_PHY_LOOPBACK:
++		if (!(tp->diag.flags & TG4_PHY_LB))
++			return -EINVAL;
++
++		tg3_full_lock(tp, 0);
++
++		tp->diag.flags &= ~TG4_PHY_LB;
++		tg3_setup_phy(tp, 1);
++
++		tg3_full_unlock(tp);
++
++		return 0;
++
++	case NICE_CMD_ENABLE_EXT_LOOPBACK:
++		if (tp->diag.flags & TG4_MSK_LB)
++			return -EINVAL;
++
++		if (nrq->nrq_speed != 10 &&
++		    nrq->nrq_speed != 100 &&
++		    nrq->nrq_speed != 1000)
++			return -EINVAL;
++
++		/* We don't support EXT loopback with SERDES yet. */
++		if (tp->phy_flags & TG3_PHYFLG_ANY_SERDES)
++			return -EINVAL;
++
++		if (nrq->nrq_speed == 1000 &&
++		    (tp->phy_flags & TG3_PHYFLG_10_100_ONLY))
++			return -EINVAL;
++
++		tg3_full_lock(tp, 0);
++		netif_carrier_off(tp->dev);
++
++		tp->diag.flags |= TG4_EXT_LB;
++		tg3_phy_lpbk_set(tp, nrq->nrq_speed, true);
++
++		tg3_full_unlock(tp);
++
++		return 0;
++
++	case NICE_CMD_DISABLE_EXT_LOOPBACK:
++		if (!(tp->diag.flags & TG4_EXT_LB))
++			return -EINVAL;
++
++		tg3_full_lock(tp, 0);
++		tp->diag.flags &= ~TG4_EXT_LB;
++
++		if (!(tp->diag.flags & TG4_SUSPEND))
++			tg3_setup_phy(tp, 1);
++
++		tg3_full_unlock(tp);
++
++		return 0;
++
++	default:
++		return -EOPNOTSUPP;
++	}
++
++	return 0;
++} /* tg3d_ioctl */
++
++int tg3d_setup_loopback(struct tg3 *tp)
++{
++	if (!(tp->diag.flags & (TG4_PHY_LB | TG4_EXT_LB)))
++		return 0;
++
++	(tp->write32)(tp, MAC_EVENT, 0);
++	(tp->read32)(tp, MAC_EVENT);
++
++	(tp->write32)(tp, MAC_STATUS,
++	     (MAC_STATUS_SYNC_CHANGED |
++	      MAC_STATUS_CFG_CHANGED |
++	      MAC_STATUS_MI_COMPLETION |
++	      MAC_STATUS_LNKSTATE_CHANGED));
++	(tp->read32)(tp, MAC_STATUS);
++	udelay(40);
++
++	if (tg3_flag(tp, USE_LINKCHG_REG)) {
++		/* Polled via timer. */
++		(tp->write32)(tp, MAC_EVENT, 0);
++	} else
++		(tp->write32)(tp, MAC_EVENT, MAC_EVENT_LNKSTATE_CHANGED);
++
++	(tp->read32)(tp, MAC_EVENT);
++	udelay(40);
++
++	if (tr32(MAC_TX_STATUS) & TX_STATUS_LINK_UP) {
++		/* tg3_test_loopback has the following comment:
++		 *
++		 * "All link indications report up, but the hardware
++		 * isn't really ready for about 20 msec.  Double it
++		 * to be sure."
++		 *
++		 * This problem was discovered with the external loopback test,
++		 * but seems to resolve a problem seen with the internal
++		 * loopback test (on a particular machine) as well.
++		 */
++		mdelay(40);
++
++		if (tp->diag.flags & TG4_PHY_LB)
++			netdev_info(tp->dev,
++				    "Link is up in phy int loopback mode\n");
++		else if (tp->diag.flags & TG4_EXT_LB)
++			netdev_info(tp->dev,
++				    "Link is up in phy ext loopback mode\n");
++
++		netif_carrier_on(tp->dev);
++	}
++
++	return 1;
++} /* tg3d_setup_loopback */
+diff --git a/drivers/net/ethernet/broadcom/tg3/tgg.h b/drivers/net/ethernet/broadcom/tg3/tgg.h
+new file mode 100644
+index 0000000..3f6f30a
+--- /dev/null
++++ b/drivers/net/ethernet/broadcom/tg3/tgg.h
+@@ -0,0 +1,25 @@
++/*
++ * tgg.h: tg3diag Broadcom Tigon3 ethernet driver diag extension.
++ *
++ * Copyright (C) 2007-2013 Broadcom Corporation.
++ *
++ */
++
++struct tg3;
++
++struct tg3d_diag {
++	unsigned int flags;
++	#define TG4_MSK_LB	0x00000007
++	#define TG4_MAC_LB	0x00000001
++	#define TG4_PHY_LB	0x00000002
++	#define TG4_EXT_LB	0x00000004
++	#define TG4_SUSPEND	0x00000010
++
++	u32	sv_advertising;
++	u16	sv_speed;
++	u8	sv_autoneg;
++	u8	sv_duplex;
++};
++
++int tg3d_setup_loopback(struct tg3 *tp);
++int tg3d_ioctl(struct tg3 *, struct net_device *, struct ifreq *, int);
