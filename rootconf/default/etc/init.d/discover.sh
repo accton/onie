@@ -68,6 +68,7 @@ do_start() {
             install_remain_sticky_arch || {
                 echo "Error: problems making install boot mode sticky" > /dev/console
             }
+            sync;sync
             # pass through to discover
             echo "$daemon: installer mode detected.  Running installer." > /dev/console
             echo "** Installer Mode Enabled **" >> /etc/issue
