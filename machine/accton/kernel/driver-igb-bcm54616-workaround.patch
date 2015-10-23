@@ -1,8 +1,10 @@
+
+
 diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index 833f86f..286cd1f 100644
+index 833f86f..867f080 100644
 --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
 +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -1146,6 +1146,18 @@ static s32 igb_setup_copper_link_82575(struct e1000_hw *hw)
+@@ -1146,6 +1146,17 @@ static s32 igb_setup_copper_link_82575(struct e1000_hw *hw)
  	if (ret_val)
  		goto out;
  
@@ -14,14 +16,13 @@ index 833f86f..286cd1f 100644
 +	hw->phy.ops.write_reg(hw,0x0,phy_data);
 +	phy_data &=~(0x8000);
 +	hw->phy.ops.write_reg(hw,0x0,phy_data);
-+	printk("workaround,reset\n");
 +}
 +#endif
 +
  	ret_val = igb_setup_copper_link(hw);
  out:
  	return ret_val;
-@@ -1268,6 +1280,36 @@ static s32 igb_setup_serdes_link_82575(struct e1000_hw *hw)
+@@ -1268,6 +1279,31 @@ static s32 igb_setup_serdes_link_82575(struct e1000_hw *hw)
  		hw_dbg("Configuring Forced Link:PCS_LCTL=0x%08X\n", reg);
  	}
  
@@ -29,20 +30,15 @@ index 833f86f..286cd1f 100644
 +{
 +	u16 phy_data;
 +	u16 phy_temp;
-+	printk("Add workaround, run_7\n");
-+	printk("\n\r~~~~~hw->mac.forced_speed_duplex=%x\n\r~~~~~hw->mac.autoneg=%x",hw->mac.forced_speed_duplex,hw->mac.autoneg );
 +	if (hw->mac.autoneg==1)
 +	{
 +		/* check the link partner speed support 1G */
 +		hw->phy.ops.read_reg(hw,0xa,&phy_data);
-+		printk( "\n\rphy_data=0x%x", phy_data);
 +		hw->phy.ops.read_reg(hw,0xa,&phy_temp);
-+		printk( "\n\rphy_temp=0x%x", phy_temp);
 +		phy_data|=phy_temp;
 +
 +		if ((phy_data&0x7c00)!=0)
 +		{
-+			printk("\n\r~~~~~Add workaround 1G");
 +			/*graceliu force link for HW RD ask*/
 +			reg &= ~E1000_PCS_LCTL_AN_ENABLE;     /* Disable Autoneg*/
 +			reg &= ~E1000_PCS_LCTL_FORCE_LINK;    /* Disable forcelink*/
