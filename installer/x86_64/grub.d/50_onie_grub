@@ -124,7 +124,12 @@ EOF
 done
 
 # Look for an ONIE compatible DIAG image and add a boot entry for it.
-diag_label=$(blkid | grep -- '-DIAG"' | sed -e 's/^.*LABEL="//' -e 's/".*$//')
+if [ -n "$OS_LABEL" ] ; then
+    LABEL="$OS_LABEL"
+else
+    LABEL='-DIAG"'
+fi
+diag_label=$(blkid | grep -- "$LABEL" | sed -e 's/^.*LABEL="//' -e 's/".*$//')
 if [ -n "$diag_label" ]  ; then
     cat <<EOF >> $grub_cfg
 menuentry '$diag_label' {
