@@ -28,6 +28,7 @@ I2CTOOLS_SYSEEPROM = no
 
 # Console parameters
 CONSOLE_DEV = 1
+CONSOLE_SPEED = 9600
 
 #-------------------------------------------------------------------------------
 #
