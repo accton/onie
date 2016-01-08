@@ -1,15 +1,15 @@
 
 
 diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index 833f86f..446a0d9 100644
+index 6555876..2d51f91 100644
 --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
 +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -1146,6 +1146,18 @@ static s32 igb_setup_copper_link_82575(struct e1000_hw *hw)
- 	if (ret_val)
- 		goto out;
+@@ -1604,6 +1604,18 @@ static s32 igb_setup_copper_link_82575(struct e1000_hw *hw)
+ 		break;
+ 	}
  
 +#if 1  //HW RD and Grace workaounrd on 2015-0710
-+	if (hw->phy.type == e1000_phy_bcm54616)
++	if (hw->phy.type == e1000_phy_bcm54616s)
 +	{
 +		u16 phy_data;
 +		hw->phy.ops.read_reg(hw,0x0,&phy_data);
@@ -20,15 +20,15 @@ index 833f86f..446a0d9 100644
 +	}
 +#endif
 +
- 	ret_val = igb_setup_copper_link(hw);
- out:
- 	return ret_val;
-@@ -1268,6 +1280,32 @@ static s32 igb_setup_serdes_link_82575(struct e1000_hw *hw)
+ 	if (ret_val)
+ 		goto out;
+ 
+@@ -1745,6 +1757,32 @@ static s32 igb_setup_serdes_link_82575(struct e1000_hw *hw)
  		hw_dbg("Configuring Forced Link:PCS_LCTL=0x%08X\n", reg);
  	}
  
 +#if 1
-+	if (hw->phy.type == e1000_phy_bcm54616)
++	if (hw->phy.type == e1000_phy_bcm54616s)
 +	{
 +		u16 phy_data;
 +		u16 phy_temp;
@@ -55,26 +55,26 @@ index 833f86f..446a0d9 100644
 +
  	wr32(E1000_PCS_LCTL, reg);
  
- 	if (!igb_sgmii_active_82575(hw))
+ 	if (!pcs_autoneg && !igb_sgmii_active_82575(hw))
 diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
-index b17d7c2..b16260f 100644
+index c1bb64d..5a0c167 100644
 --- a/drivers/net/ethernet/intel/igb/e1000_phy.c
 +++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
-@@ -1972,6 +1972,9 @@ s32 igb_phy_sw_reset(struct e1000_hw *hw)
+@@ -2049,6 +2049,9 @@ s32 igb_phy_sw_reset(struct e1000_hw *hw)
  	s32 ret_val = 0;
  	u16 phy_ctrl;
  
-+	if (hw->phy.type == e1000_phy_bcm54616)
-+		return E1000_SUCCESS;
++	if (hw->phy.type == e1000_phy_bcm54616s)
++		return 0;
 +
  	if (!(hw->phy.ops.read_reg))
  		goto out;
  
-@@ -2147,6 +2150,9 @@ void igb_power_down_phy_copper(struct e1000_hw *hw)
+@@ -2222,6 +2225,9 @@ void igb_power_down_phy_copper(struct e1000_hw *hw)
  {
  	u16 mii_reg = 0;
  
-+	if (hw->phy.type == e1000_phy_bcm54616)
++	if (hw->phy.type == e1000_phy_bcm54616s)
 +		return;
 +
  	/* The PHY will retain its settings across a power down/up cycle */
