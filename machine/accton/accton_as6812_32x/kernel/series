@@ -1,1 +1,2 @@
 driver-intel-igb.patch
+driver-igb-bcm54616-workaround.patch
