@@ -1,0 +1,40 @@
+build with old host gcc that does not supports newer options
+
+From: david_yang <david_yang@accton.com>
+
+Copyright (C) 2016 david_yang <david_yang@accton.com>
+
+SPDX-License-Identifier:     GPL-2.0
+
+Minor Makefile changes for ONIE build environment.
+---
+ Make.defaults | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/Make.defaults b/Make.defaults
+index 661b36d..992cac9 100644
+--- a/Make.defaults
++++ b/Make.defaults
+@@ -20,19 +20,15 @@ cflags	:= $(CFLAGS) \
+ 	$(if $(filter $(CC),clang),$(clang_cflags),) \
+ 	$(if $(filter $(CC),gcc),$(gcc_cflags),)
+ host_cflags	:= $(HOST_CFLAGS) \
+-	-Wall -Wsign-compare -std=gnu11 -fshort-wchar -fPIC \
++	-Wall -Wsign-compare -std=gnu99 -fshort-wchar -fPIC \
+ 	-fvisibility=hidden \
+-	-D_GNU_SOURCE -I${TOPDIR}/src/include/efivar/ \
+-	$(if $(filter $(HOST_CC),clang),$(clang_cflags),) \
+-	$(if $(filter $(HOST_CC),gcc),$(gcc_cflags),)
++	-D_GNU_SOURCE -I${TOPDIR}/src/include/efivar/
+ clang_ccldflags =
+ gcc_ccldflags = -fno-merge-constants
+ ccldflags := $(cflags) $(CCLDFLAGS) $(LDFLAGS) \
+ 	$(if $(filter $(CCLD),clang),$(clang_ccldflags),) \
+ 	$(if $(filter $(CCLD),gcc),$(gcc_ccldflags),)
+-host_ccldflags := $(host_cflags) $(HOST_CCLDFLAGS) $(HOST_LDFLAGS) \
+-	$(if $(filter $(HOST_CCLD),clang),$(clang_ccldflags),) \
+-	$(if $(filter $(HOST_CCLD),gcc),$(gcc_ccldflags),)
++host_ccldflags := $(host_cflags) $(HOST_CCLDFLAGS) $(HOST_LDFLAGS)
+ LIBFLAGS += -shared
+ 
+ SONAME_VERSION := 0
