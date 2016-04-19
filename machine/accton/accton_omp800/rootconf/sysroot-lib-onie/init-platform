@@ -1,0 +1,50 @@
+# -*- shell-script -*-
+
+# Demonstration of the init-platform functionality
+
+# This script fragment is sourced by /etc/init.d/init-arch.sh, which
+# in turn executes the init_platform_pre_arch() and
+# init_platform_post_arch() functions.
+
+# A machine can use this feature to run any early boot scripts needed
+# by the machine.  A typical usage would be to initialize specific
+# hardware devices.
+
+# Use this function to perform any initializations required by the
+# architecture specific initialization.  This function executes before
+# the architecture initializations.
+init_platform_pre_arch()
+{
+    i2cset -y 0 0x76 0 0x4 >/dev/null 2>&1
+    # reset temeperature values of CPU and switch ASIC to default
+    i2cset -y 0 0x60 0x30 0x7f >/dev/null 2>&1
+    i2cset -y 0 0x60 0x31 0x7f >/dev/null 2>&1
+    # read board info
+    reg=$(i2cget -y 0 0x60 0x2 2>/dev/null)
+    i2cset -y 0 0x76 0 0 >/dev/null 2>&1
+
+    if [ $(( ($reg & 0x80) >> 7 )) -eq 1 ] ; then
+        cpu="B"
+    else
+        cpu="A"
+    fi
+    if [ $(( ($reg & 0x10) >> 4 )) -eq 1 ] ; then
+        card="Fabric"
+        machine="accton_omp800_fc"
+    else
+        card="Line"
+        machine="accton_omp800_lc"
+    fi
+    if [ $(( ($reg & 0x8) >> 3 )) -eq 1 ] ; then
+        sub="Lower"
+    else
+        sub="Upper"
+    fi
+    slot=$(( $reg & 0x7 ))
+    sed -i -e "s/accton_omp800/${machine}/g" /etc/machine.conf
+    log_info_msg "Platform   : $(onie-sysinfo -p)"
+    log_info_msg "Card Type  : $card"
+    log_info_msg "Subchassis : $sub"
+    log_info_msg "Slot Id    : $slot"
+    log_info_msg "Cpu Id     : $cpu"
+}
