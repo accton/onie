@@ -1,2 +1,3 @@
-# This series applies on GIT commit 4e00096c594d66904981b49913a1f79e0b8c5116
+# This series applies on GIT commit d4d1a1d1b9c520a80142f8f56d22abd32b68daf5
+driver-igb-marvell-phy.patch
 driver-igb-broadcom-phy.patch
