@@ -1,4 +1,4 @@
-Patches for Accton AS4510_54T
+Patches for Accton AS4510_52T
 
 diff --git a/libbb/xfuncs_printf.c b/libbb/xfuncs_printf.c
 index d8a42ba..c52d78d 100644

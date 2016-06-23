@@ -1,4 +1,4 @@
-# Makefile fragment for Accton AS4510_54T
+# Makefile fragment for Accton AS4510_52T
 
 # Vendor's version number can be defined here.
 # Available variables are 'VENDOR_VERSION' and 'UBOOT_IDENT_STRING'.
@@ -19,7 +19,7 @@ else
   $(error Unknown VENDOR_REV)
 endif
 
-UBOOT_MACHINE = AS4510_54T
+UBOOT_MACHINE = AS4510_52T
 
 # Vendor ID -- IANA Private Enterprise Number:
 # http://www.iana.org/assignments/enterprise-numbers

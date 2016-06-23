@@ -1,14 +1,14 @@
-Support for Accton AS4510_54T platform (ARM Cortex-A9 / Hurricane2) networking platform
+Support for Accton AS4510_52T platform (ARM Cortex-A9 / Hurricane2) networking platform
 Baseline files sourced from Broadcom LDK 3.4.10
 
-diff --git a/arch/arm/boot/dts/accton_as4510_54t.dts b/arch/arm/boot/dts/accton_as4510_54t.dts
+diff --git a/arch/arm/boot/dts/accton_as4510_52t.dts b/arch/arm/boot/dts/accton_as4510_52t.dts
 new file mode 100644
 index 0000000..71aecdc
 --- /dev/null
-+++ b/arch/arm/boot/dts/accton_as4510_54t.dts
++++ b/arch/arm/boot/dts/accton_as4510_52t.dts
 @@ -0,0 +1,92 @@
 +/*
-+ * Accton AS4510_54T Device Tree Source
++ * Accton AS4510_52T Device Tree Source
 + *
 + * Copyright 2015, Accton Technology Corporation.
 + *
@@ -22,8 +22,8 @@ index 0000000..71aecdc
 +/include/ "helix4.dtsi"
 +
 +/ {
-+    model = "accton,as4510_54t";
-+    compatible = "accton,as4510_54t";
++    model = "accton,as4510_52t";
++    compatible = "accton,as4510_52t";
 +
 +    aliases {
 +        serial0 = &uart0;
@@ -108,7 +108,7 @@ index b45588d..dfeff20 100644
  MACHINE_END
  
 +static const char * hurricane2_dt_board_compat[] = {
-+    "accton,as4510_54t",
++    "accton,as4510_52t",
 +    NULL
 +};
 +

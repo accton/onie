@@ -1,4 +1,4 @@
-Support for Accton AS4510_54T
+Support for Accton AS4510_52T
 
 diff --git a/Makefile b/Makefile
 index 4017993..38bf9cc 100755
@@ -134,11 +134,11 @@ index 33e7098..b86f5fc 100755
  
  #if defined(CONFIG_PRAM) || defined(CONFIG_LOGBUFFER)
  	/*
-diff --git a/board/accton/as4510_54t/Makefile b/board/accton/as4510_54t/Makefile
+diff --git a/board/accton/as4510_52t/Makefile b/board/accton/as4510_52t/Makefile
 new file mode 100644
 index 0000000..98bf898
 --- /dev/null
-+++ b/board/accton/as4510_54t/Makefile
++++ b/board/accton/as4510_52t/Makefile
 @@ -0,0 +1,28 @@
 +include $(TOPDIR)/config.mk
 +
@@ -168,11 +168,11 @@ index 0000000..98bf898
 +sinclude $(obj).depend
 +
 +#########################################################################
-diff --git a/board/accton/as4510_54t/as4510_54t.c b/board/accton/as4510_54t/as4510_54t.c
+diff --git a/board/accton/as4510_52t/as4510_52t.c b/board/accton/as4510_52t/as4510_52t.c
 new file mode 100644
 index 0000000..3625210
 --- /dev/null
-+++ b/board/accton/as4510_54t/as4510_54t.c
++++ b/board/accton/as4510_52t/as4510_52t.c
 @@ -0,0 +1,205 @@
 +/*
 + * Copyright (C) 2013, Broadcom Corporation. All Rights Reserved.
@@ -379,11 +379,11 @@ index 0000000..3625210
 +#endif
 +	return rc;
 +}
-diff --git a/board/accton/as4510_54t/config.mk b/board/accton/as4510_54t/config.mk
+diff --git a/board/accton/as4510_52t/config.mk b/board/accton/as4510_52t/config.mk
 new file mode 100644
 index 0000000..5b71c21
 --- /dev/null
-+++ b/board/accton/as4510_54t/config.mk
++++ b/board/accton/as4510_52t/config.mk
 @@ -0,0 +1,19 @@
 +ifdef CONFIG_NAND_IPROC_BOOT
 +CONFIG_SYS_TEXT_BASE = 0x28000000
@@ -404,11 +404,11 @@ index 0000000..5b71c21
 +LDSCRIPT := $(SRCTREE)/board/$(BOARDDIR)/u-boot-custom.lds
 +endif
 +#PLATFORM_RELFLAGS += -DSVN_REVISION=' " $(SVN_REV)"'
-diff --git a/board/accton/as4510_54t/ddr_init_table.c b/board/accton/as4510_54t/ddr_init_table.c
+diff --git a/board/accton/as4510_52t/ddr_init_table.c b/board/accton/as4510_52t/ddr_init_table.c
 new file mode 100644
 index 0000000..f972359
 --- /dev/null
-+++ b/board/accton/as4510_54t/ddr_init_table.c
++++ b/board/accton/as4510_52t/ddr_init_table.c
 @@ -0,0 +1,1529 @@
 +/*
 + * Copyright (C) 2013, Broadcom Corporation. All Rights Reserved.
@@ -1939,11 +1939,11 @@ index 0000000..f972359
 +0x06c,	0x000007df,
 +0xffffffff
 +};
-diff --git a/board/accton/as4510_54t/u-boot-custom.lds b/board/accton/as4510_54t/u-boot-custom.lds
+diff --git a/board/accton/as4510_52t/u-boot-custom.lds b/board/accton/as4510_52t/u-boot-custom.lds
 new file mode 100644
 index 0000000..58b534a
 --- /dev/null
-+++ b/board/accton/as4510_54t/u-boot-custom.lds
++++ b/board/accton/as4510_52t/u-boot-custom.lds
 @@ -0,0 +1,91 @@
 +/*
 + * January 2004 - Changed to support H4 device
@@ -2036,11 +2036,11 @@ index 0000000..58b534a
 +	/DISCARD/ : { *(.interp*) }
 +	/DISCARD/ : { *(.gnu*) }
 +}
-diff --git a/board/accton/as4510_54t/u-boot-nr.lds b/board/accton/as4510_54t/u-boot-nr.lds
+diff --git a/board/accton/as4510_52t/u-boot-nr.lds b/board/accton/as4510_52t/u-boot-nr.lds
 new file mode 100644
 index 0000000..c3586c3
 --- /dev/null
-+++ b/board/accton/as4510_54t/u-boot-nr.lds
++++ b/board/accton/as4510_52t/u-boot-nr.lds
 @@ -0,0 +1,99 @@
 +/*
 + * January 2004 - Changed to support H4 device
@@ -2149,7 +2149,7 @@ index 368f3c4..acbc888 100644
  hurricane2_nor              arm         armv7        bcm95615x           broadcom       hurricane2        hurricane2:L2C_AS_RAM,RUN_DDR_SHMOO2,CUSTOM_LINKER_SCRIPT,NOR_IPROC_BOOT
  hurricane2_noshmoo           arm         armv7       bcm95615x           broadcom       hurricane2        hurricane2:CUSTOM_LINKER_SCRIPT
  hurricane2_rom_emul          arm         armv7       bcm95333x           broadcom       hurricane2        hurricane2_rom_emul:L2C_AS_RAM,NO_CODE_RELOC
-+AS4510_54T                   arm         armv7       as4510_54t           accton        hurricane2        AS4510_54T:ONIE_PLATFORM_REV=0
++AS4510_52T                   arm         armv7       as4510_52t           accton        hurricane2        AS4510_52T:ONIE_PLATFORM_REV=0
  katana2                       arm         armv7       bcm95645x           broadcom       katana2           katana2:RUN_DDR_SHMOO2,IPROC_DDR_ECC 
  katana2_nand                  arm         armv7       bcm95645x           broadcom       katana2           katana2:RUN_DDR_SHMOO2,IPROC_DDR_ECC,NAND_IPROC_BOOT
  origen			     arm	 armv7	     origen		 samsung	exynos
@@ -2161,8 +2161,8 @@ index 60b2ecf..0fd686f 100644
  $(obj)hurricane2_rom_emul_config: $(TOPDIR)/include/configs/hurricane2_rom_emul.h 
  	@$(MKCONFIG) -A $(@F:_config=); touch $@
  
-+AS4510_54T_config: $(obj)AS4510_54T_config
-+$(obj)AS4510_54T_config: $(TOPDIR)/include/configs/AS4510_54T.h
++AS4510_52T_config: $(obj)AS4510_52T_config
++$(obj)AS4510_52T_config: $(TOPDIR)/include/configs/AS4510_52T.h
 +	@$(MKCONFIG) -A $(@F:_config=); touch $@
 +
  katana2_config: $(obj)katana2_config 
@@ -2681,11 +2681,11 @@ index 1dc6dc6..a8c4160 100755
  	bank = (phyaddr&0x1f00)>>8;
  
  	printf("%s phyaddr(0x%x) bank(0x%x) reg(0x%x) data(0x%x)\n", __FUNCTION__, addr, bank, reg, *value);
-diff --git a/include/configs/AS4510_54T.h b/include/configs/AS4510_54T.h
+diff --git a/include/configs/AS4510_52T.h b/include/configs/AS4510_52T.h
 new file mode 100644
 index 0000000..c7553b4
 --- /dev/null
-+++ b/include/configs/AS4510_54T.h
++++ b/include/configs/AS4510_52T.h
 @@ -0,0 +1,290 @@
 +#ifndef __HURRICANE2_H
 +#define __HURRICANE2_H
@@ -2694,7 +2694,7 @@ index 0000000..c7553b4
 +#include "configs/common_config.h"
 +
 +/*
-+ * AS4510_54T NOR flash layout
++ * AS4510_52T NOR flash layout
 + * uboot        0x00000000 - 0x000cffff (size 0x000d0000, 832KB)
 + * shmoo        0x000d0000 - 0x000dffff (size 0x00010000, 64KB)
 + * uboot-env    0x000e0000 - 0x000effff (size 0x00010000, 64KB)
@@ -2703,8 +2703,8 @@ index 0000000..c7553b4
 + */
 +
 +/* High level Configuration Options */
-+#define CONFIG_AS4510_54T		1	/* accton_as4510_54t board specific */
-+#define CONFIG_BOARDNAME		"AS4510_54T"
++#define CONFIG_AS4510_52T		1	/* accton_as4510_52t board specific */
++#define CONFIG_BOARDNAME		"AS4510_52T"
 +#define CONFIG_L2C_AS_RAM
 +#define CONFIG_RUN_DDR_SHMOO2
 +#define CONFIG_CUSTOM_LINKER_SCRIPT
@@ -2774,7 +2774,7 @@ index 0000000..c7553b4
 +
 +/* Where kernel is loaded to in memory */
 +#define CONFIG_SYS_LOAD_ADDR				0x70000000
-+#define CONFIG_SYS_PROMPT				"accton_as4510-54t-> "
++#define CONFIG_SYS_PROMPT				"accton_as4510-52t-> "
 +#define LINUX_BOOT_PARAM_ADDR				0x60200000
 +
 +#define CONFIG_SYS_MEMTEST_START			CONFIG_PHYS_SDRAM_1
@@ -2956,7 +2956,7 @@ index 0000000..c7553b4
 +#define CONFIG_SYS_EEPROM_LOAD_ENV_MAC
 +#define CONFIG_SYS_EEPROM_MAX_NUM_ETH_PORTS	1
 +
-+#define CONFIG_HOSTNAME		accton-as4510_54t-unknown
++#define CONFIG_HOSTNAME		accton-as4510_52t-unknown
 +
 +/*
 +** Platform environment variables needed by the common env

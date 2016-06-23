@@ -1,5 +1,5 @@
 ====================================
-Installing ONIE on Accton AS4510_54T
+Installing ONIE on Accton AS4510_52T
 ====================================
 
 Cross-Compiling ONIE
@@ -8,29 +8,29 @@ Cross-Compiling ONIE
 Change directories to ``build-config`` to compile ONIE.
 
 To compile ONIE first change directories to ``build-config`` and then
-type ``"make MACHINEROOT=../machine/accton MACHINE=accton_as4510_54t all"``.
+type ``"make MACHINEROOT=../machine/accton MACHINE=accton_as4510_52t all"``.
 For example::
 
   $ cd build-config
-  $ make -j4 MACHINEROOT=../machine/accton MACHINE=accton_as4510_54t all
+  $ make -j4 MACHINEROOT=../machine/accton MACHINE=accton_as4510_52t all
 
 When complete, the ONIE binaries are located in
 ``build/images``::
 
-  -rw-r--r-- 3604480 May  7 11:38 onie-accton_as4510_54t-r0.bin
+  -rw-r--r-- 3604480 May  7 11:38 onie-accton_as4510_52t-r0.bin
 
 Cross-Compiling the DEMO OS
 ===========================
 
 To compile the demo OS first change directories to ``build-config``
-and then type ``"make MACHINEROOT=../machine/accton MACHINE=accton_as4510_54t demo"``.
+and then type ``"make MACHINEROOT=../machine/accton MACHINE=accton_as4510_52t demo"``.
 
   $ cd build-config
-  $ make -j4 MACHINEROOT=../machine/accton MACHINE=accton_as4510_54t demo
+  $ make -j4 MACHINEROOT=../machine/accton MACHINE=accton_as4510_52t demo
 
 When complete, the demo OS installer is located in ``build/images``::
 
-  -rw-r--r-- 10486945 Jun 24 13:30 demo-installer-arm-accton_as4510_54t-r0.bin
+  -rw-r--r-- 10486945 Jun 24 13:30 demo-installer-arm-accton_as4510_52t-r0.bin
 
 Installing the ONIE binaries
 ============================
@@ -41,15 +41,15 @@ Step 1 -- Put the ONIE files on a TFTP server
 The following directions assume the files are on the root of the TFTP
 server.
 
-Step 2 -- Install ONIE kernel (onie-accton_as4510_54t-r0.bin)
+Step 2 -- Install ONIE kernel (onie-accton_as4510_52t-r0.bin)
 -------------------------------------------------------------
 
 Copying the image down using TFTP and flash to the SPI flash::
 
-  => tftp onie-accton_as4510_54t-r0.bin
+  => tftp onie-accton_as4510_52t-r0.bin
   => sf probe 0
   => sf erase 0 0x7f0000
-  Replace 0x7dce20 with size of onie-accton_as4510_54t-r0.bin
+  Replace 0x7dce20 with size of onie-accton_as4510_52t-r0.bin
   => sf write $fileaddr 0 $filesize
 
 Step 3 -- Configure Serial Console
