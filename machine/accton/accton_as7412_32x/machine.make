@@ -3,7 +3,7 @@
 # Vendor's version number can be defined here.
 # Available variable is 'VENDOR_VERSION'.
 # e.g.,
-# VENDOR_VERSION = .00.01
+VENDOR_VERSION = 2016.05.00.01
 
 ONIE_ARCH ?= x86_64
 SWITCH_ASIC_VENDOR = bcm
