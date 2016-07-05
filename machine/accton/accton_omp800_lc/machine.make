@@ -1,4 +1,4 @@
-# Accton AS8700_512X
+# Accton OMP800_LC
 
 # Vendor's version number can be defined here.
 # Available variable is 'VENDOR_VERSION'.
