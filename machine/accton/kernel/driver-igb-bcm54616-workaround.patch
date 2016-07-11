@@ -1,7 +1,7 @@
 
 
 diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index 1b1b4f7..c5fad76 100644
+index 1b1b4f7..5b2422a 100644
 --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
 +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
 @@ -1616,6 +1616,18 @@ static s32 igb_setup_copper_link_82575(struct e1000_hw *hw)
@@ -23,7 +23,7 @@ index 1b1b4f7..c5fad76 100644
  	if (ret_val)
  		goto out;
  
-@@ -1757,6 +1769,32 @@ static s32 igb_setup_serdes_link_82575(struct e1000_hw *hw)
+@@ -1757,6 +1769,34 @@ static s32 igb_setup_serdes_link_82575(struct e1000_hw *hw)
  		hw_dbg("Configuring Forced Link:PCS_LCTL=0x%08X\n", reg);
  	}
  
@@ -34,6 +34,8 @@ index 1b1b4f7..c5fad76 100644
 +		u16 phy_temp;
 +		if (hw->mac.autoneg==1)
 +		{
++			/* Read 0x7 before read 0xA*/
++			hw->phy.ops.read_reg(hw,0x7,&phy_data);
 +			/* check the link partner speed support 1G */
 +			hw->phy.ops.read_reg(hw,0xa,&phy_data);
 +			hw->phy.ops.read_reg(hw,0xa,&phy_temp);
