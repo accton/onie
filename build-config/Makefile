@@ -3,7 +3,7 @@
 #
 #  Copyright (C) 2013,2014,2015,2016 Curt Brune <curt@cumulusnetworks.com>
 #  Copyright (C) 2014,2015 Carlos Cardenas <carlos@cumulusnetworks.com>
-#  Copyright (C) 2014 david_yang <david_yang@accton.com>
+#  Copyright (C) 2014,2016 david_yang <david_yang@accton.com>
 #  Copyright (C) 2014 Mandeep Sandhu <mandeep.sandhu@cyaninc.com>
 #
 #  SPDX-License-Identifier:     GPL-2.0
@@ -357,6 +357,8 @@ endif
 ifeq ($(IPMITOOL_ENABLE),yes)
   include make/ipmitool.make
 endif
+PLATFORM_TOOLS_DIR ?= $(MACHINEDIR)
+-include $(PLATFORM_TOOLS_DIR)/platform-tools.make
 include make/images.make
 include make/demo.make
 
