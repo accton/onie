@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #  Copyright (C) 2013,2014,2016 Curt Brune <curt@cumulusnetworks.com>
-#  Copyright (C) 2014 david_yang <david_yang@accton.com>
+#  Copyright (C) 2014,2016 david_yang <david_yang@accton.com>
 #  Copyright (C) 2013 Doron Tsur <doront@mellanox.com>
 #
 #  SPDX-License-Identifier:     GPL-2.0
@@ -82,6 +82,10 @@ config_ethmgmt_fallback()
     shift
     local intf=$1
     shift
+
+    if [ "$onie_skip_ethmgmt_fallback" = "yes" ] ; then
+        return 0
+    fi
 
     # Remove any previously configured, IPv4 addresses
     ip -f inet addr flush dev $intf

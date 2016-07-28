@@ -188,6 +188,10 @@ SWITCH_ASIC_VENDOR ?= unknown
 # addresses?  Can be set to "yes" in machine.make.
 SKIP_ETHMGMT_MACS ?= no
 
+# Should ONIE skip programming the Ethernet management interface
+# fallback IP address?  Can be set to "yes" in machine.make.
+SKIP_ETHMGMT_FALLBACK ?= no
+
 TREE_STAMP  = $(STAMPDIR)/tree
 tree-stamp: $(TREE_STAMP)
 $(TREE_STAMP): $(PROJECT_STAMP)
