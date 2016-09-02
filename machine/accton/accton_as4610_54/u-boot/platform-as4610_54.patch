@@ -7519,6 +7519,40 @@ index 0000000..1f12e6d
 +	" Restore GPT information on a device connected\n"
 +	" to interface\n"
 +);
+diff --git a/common/cmd_sys_eeprom.c b/common/cmd_sys_eeprom.c
+index cf2ed1c..6a52b5e 100644
+--- a/common/cmd_sys_eeprom.c
++++ b/common/cmd_sys_eeprom.c
+@@ -1206,11 +1206,29 @@ int mac_read_from_eeprom(void)
+ 				macbase[0], macbase[1], macbase[2],
+ 				macbase[3], macbase[4], macbase[5]);
+ 			sprintf(enetvar, i ? "eth%daddr" : "ethaddr", i);
++#if 1
++{
++			/* aaron_lien, 2013/08/05,
++			 * Initialize $ethaddr if it is blank or
++			 * if the current value is different from non-volatile board information
++			 * then change it.
++			 */
++			char *env;
++			env = getenv(enetvar);
++			if (!env) {
++				setenv(enetvar, ethaddr);
++			} else {
++				if(strcmp(env, ethaddr))
++					setenv(enetvar, ethaddr);
++			}
++}
++#else
+ 			/* Only initialize environment variables that are blank
+ 			 * (i.e. have not yet been set)
+ 			 */
+ 			if (!getenv(enetvar))
+ 				setenv(enetvar, ethaddr);
++#endif
+ 
+ 			macbase[5]++;
+ 			if (macbase[5] == 0) {
 diff --git a/common/usb_storage.c b/common/usb_storage.c
 index 11e2f7a..cf3f9ae 100644
 --- a/common/usb_storage.c
