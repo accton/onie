@@ -9101,10 +9101,10 @@ index a7fd7e3..550af55 100644
  	usbdgpiopwr &= SUPPLY_USBD_POWER;
 diff --git a/include/configs/AS4610_54.h b/include/configs/AS4610_54.h
 new file mode 100755
-index 0000000..6e43a9c
+index 0000000..6335341
 --- /dev/null
 +++ b/include/configs/AS4610_54.h
-@@ -0,0 +1,335 @@
+@@ -0,0 +1,342 @@
 +/*
 + * Samer Nubani <samer@cumulusnetworks.com>
 + * Curt Brune <curt@cumulusnetworks.com>
@@ -9432,8 +9432,15 @@ index 0000000..6e43a9c
 +#define CONFIG_PLATFORM_ENV	\
 + "consoledev=ttyS0\0"		\
 + "onie_start=0x1e100000\0"	\
-+ "onie_sz.b=0x00700000\0" \
-+ "initrd_high=0xffffffff\0"
++ "onie_sz.b=0x00700000\0"	\
++ "initrd_high=0xffffffff\0"	\
++ "boot_diag=if test -n $onie_boot_reason; then "\
++  "if test $onie_boot_reason = diag; then "	\
++  "run diag_bootcmd; fi; fi\0"			\
++ "diag_bootcmd=setenv bootargs console=$consoledev,$baudrate "\
++  "quiet $diagargs && "		\
++  "usb start && usbiddev && ext2load usb $usbdev:1 $loadaddr uImage && "\
++  "bootm $loadaddr\0"
 +
 +#define	CONFIG_EXTRA_ENV_SETTINGS	\
 + CONFIG_PLATFORM_ENV			\
@@ -9498,6 +9505,19 @@ index 1e9dca8..874b997 100644
 -
 -
  #endif /* _IPROC_COMMON_H_ */
+diff --git a/include/configs/onie_common_config.h b/include/configs/onie_common_config.h
+index c941e2a..46436d3 100644
+--- a/include/configs/onie_common_config.h
++++ b/include/configs/onie_common_config.h
+@@ -87,7 +87,7 @@
+ 	"onie_update=setenv onie_boot_reason update && boot\0" \
+ 	"onie_uninstall=setenv onie_boot_reason uninstall && boot\0"
+ 
+-#define CONFIG_BOOTCOMMAND	"run check_boot_reason; run nos_bootcmd; run onie_bootcmd"
++#define CONFIG_BOOTCOMMAND	"run boot_diag; run check_boot_reason; run nos_bootcmd; run onie_bootcmd"
+ 
+ /*
+  * Common environemnt variables.
 diff --git a/include/exports.h b/include/exports.h
 index 63aa4b2..793f6a2 100644
 --- a/include/exports.h
