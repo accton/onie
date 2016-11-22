@@ -226,6 +226,9 @@ $(SYSROOT_COMPLETE_STAMP): $(SYSROOT_CHECK_STAMP)
 	$(Q) if [ -d $(MACHINEDIR)/rootconf/sysroot-bin ] ; then \
 		cp $(MACHINEDIR)/rootconf/sysroot-bin/* $(SYSROOTDIR)/bin ; \
 	     fi
+	$(Q) if [ -d $(MACHINEDIR)/rootconf/sysroot-etc ] ; then \
+		cp -a $(MACHINEDIR)/rootconf/sysroot-etc/* $(SYSROOTDIR)/etc ; \
+	     fi
 	$(Q) if [ -d $(MACHINEDIR)/rootconf/sysroot-init ] ; then \
 		cp $(MACHINEDIR)/rootconf/sysroot-init/* $(SYSROOTDIR)/etc/init.d ; \
 	     fi

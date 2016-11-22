@@ -2,6 +2,7 @@
 ## Useful functions and variables for boot time.
 
 #  Copyright (C) 2014-2015 Curt Brune <curt@cumulusnetworks.com>
+#  Copyright (C) 2016 david_yang <david_yang@accton.com>
 #
 #  SPDX-License-Identifier:     GPL-2.0
 
@@ -354,7 +355,15 @@ net_intf()
         intf=$(echo $onie_ip | awk -F: '{print $6}')
     fi
     if [ -z "$intf" ] ; then
-        intf_list=$(ifconfig -a |grep Ethernet| sed -e '/dummy/d'|awk '{print $1}')
+        intf_list_all=$(mktemp)
+        intf_list_deny=$(mktemp)
+        ifconfig -a |grep Ethernet|sed -e '/dummy/d'|awk '{print $1}'|sort >$intf_list_all
+        if [ -r /etc/ethmgmt.deny ] ; then
+            cat /etc/ethmgmt.deny |sort >$intf_list_deny
+        fi
+        intf_list=$(comm -23 $intf_list_all $intf_list_deny)
+        rm -f $intf_list_all
+        rm -f $intf_list_deny
     else
         intf_list="$intf"
     fi
