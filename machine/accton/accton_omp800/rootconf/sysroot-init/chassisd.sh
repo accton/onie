@@ -17,7 +17,8 @@ case $cmd in
     start)
         killall $daemon > /dev/null 2>&1
         log_begin_msg "Starting: $daemon"
-        cd / && $daemon $ARGS > /dev/null 2>&1
+        ifconfig lo up
+        cd /usr/local/accton/bin && ./$daemon $ARGS > /dev/null 2>&1
         log_end_msg
         ;;
     stop)
