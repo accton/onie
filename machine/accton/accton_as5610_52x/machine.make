@@ -5,6 +5,7 @@
 # e.g.,
 # VENDOR_VERSION = .00.01
 # UBOOT_IDENT_STRING = 1.4.0.1
+UBOOT_IDENT_STRING = 3.0.3.14
 
 
 ONIE_ARCH ?= powerpc-softfloat
