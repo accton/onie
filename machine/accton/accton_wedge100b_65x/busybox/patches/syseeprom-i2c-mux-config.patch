@@ -1,4 +1,4 @@
-Accton AS7616_64X has to configure MUX before accessing EEPROM
+Accton Wedge100B_65X has to configure MUX before accessing EEPROM
 
 diff --git a/miscutils/24cXX.c b/miscutils/24cXX.c
 index b448761..ada1d88 100644
