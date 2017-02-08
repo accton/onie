@@ -41,3 +41,48 @@ index b448761..ada1d88 100644
  	close(e->fd);
  	e->fd = -1;
  	e->dev = 0;
+diff --git a/miscutils/sys_eeprom_i2c.c b/miscutils/sys_eeprom_i2c.c
+index ed3235b..9a04de6 100644
+--- a/miscutils/sys_eeprom_i2c.c
++++ b/miscutils/sys_eeprom_i2c.c
+@@ -11,6 +11,7 @@
+     #define EEPROM_TYPE EEPROM_TYPE_UNKNOWN
+ #endif
+ 
++#define SYS_EEPROM_I2C_DEVICE_BACKUP "/dev/i2c-1"
+ /*
+  * read_sys_eeprom - read the hwinfo from i2c EEPROM
+  */
+@@ -26,7 +27,12 @@ int read_sys_eeprom(void *eeprom_data, int offset, int len)
+     if (eeprom_open(SYS_EEPROM_I2C_DEVICE, SYS_EEPROM_I2C_ADDR,
+ 		    EEPROM_TYPE, &e)) {
+ 	printf("ERROR: Cannot open I2C device\n");
+-	return -1;
++	printf("INFO: Trying to open I2C device backup\n");
++	if (eeprom_open(SYS_EEPROM_I2C_DEVICE_BACKUP, SYS_EEPROM_I2C_ADDR,
++				EEPROM_TYPE, &e)) {
++		printf("ERROR: Cannot open I2C device backup\n");
++		return -1;
++	}
+     }
+     for (i = 0; i < len; i++) {
+ 	*c = eeprom_read_byte(&e, addr);
+@@ -59,5 +65,18 @@ int write_sys_eeprom(void *eeprom_data, int len)
+ 	c++; addr++;
+     }
+ 
++    addr = SYS_EEPROM_OFFSET;
++    c = eeprom_data;
++    for (i = 0; i < len; i++) {
++	if (eeprom_open(SYS_EEPROM_I2C_DEVICE_BACKUP, SYS_EEPROM_I2C_ADDR,
++			EEPROM_TYPE, &e)) {
++	    printf("ERROR: Cannot open I2C device backup\n");
++	    return -1;
++	}
++	eeprom_write_byte(&e, addr, *c);
++	eeprom_close(&e);
++	c++; addr++;
++    }
++
+     return ret;
+ }
