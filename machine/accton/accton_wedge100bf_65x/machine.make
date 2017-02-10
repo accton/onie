@@ -1,4 +1,4 @@
-# Accton Wedge100B_65X
+# Accton Wedge100BF_65X
 
 # Vendor's version number can be defined here.
 # Available variable is 'VENDOR_VERSION'.
