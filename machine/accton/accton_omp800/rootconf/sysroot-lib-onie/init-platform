@@ -19,32 +19,19 @@ init_platform_pre_arch()
     # reset temperature values of CPU and switch ASIC to alarm boundary
     i2cset -y 0 0x60 0x30 0x40 >/dev/null 2>&1
     i2cset -y 0 0x60 0x31 0x52 >/dev/null 2>&1
-    # read board info
-    reg=$(i2cget -y 0 0x60 0x2 2>/dev/null)
     i2cset -y 0 0x76 0 0 >/dev/null 2>&1
 
-    if [ $(( ($reg & 0x80) >> 7 )) -eq 1 ] ; then
-        cpu="B"
+    chassisinfo_lib="/lib/onie/chassisinfo-platform"
+    if [ -r "$chassisinfo_lib" ] ; then
+        . $chassisinfo_lib
+        accton_chassisinfo_load
+        sed -i -e "s/accton_omp800/${ACCTON_CHASSIS_MACHINE}/g" /etc/machine.conf
+        log_info_msg "Platform   : $(onie-sysinfo -p)"
+        log_info_msg "Card Type  : $ACCTON_CHASSIS_CARD"
+        log_info_msg "Subchassis : $ACCTON_CHASSIS_SUB"
+        log_info_msg "Slot Id    : $ACCTON_CHASSIS_SLOT"
+        log_info_msg "Cpu Id     : $ACCTON_CHASSIS_CPU"
     else
-        cpu="A"
+        echo "ERROR: $chassisinfo_lib file is missing."
     fi
-    if [ $(( ($reg & 0x10) >> 4 )) -eq 1 ] ; then
-        card="Fabric"
-        machine="accton_omp800_fc"
-    else
-        card="Line"
-        machine="accton_omp800_lc"
-    fi
-    if [ $(( ($reg & 0x8) >> 3 )) -eq 1 ] ; then
-        sub="Lower"
-    else
-        sub="Upper"
-    fi
-    slot=$(( $reg & 0x7 ))
-    sed -i -e "s/accton_omp800/${machine}/g" /etc/machine.conf
-    log_info_msg "Platform   : $(onie-sysinfo -p)"
-    log_info_msg "Card Type  : $card"
-    log_info_msg "Subchassis : $sub"
-    log_info_msg "Slot Id    : $slot"
-    log_info_msg "Cpu Id     : $cpu"
 }

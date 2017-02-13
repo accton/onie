@@ -2,6 +2,7 @@
 check_machine_image()
 {
     if [ "$onie_machine" != "$image_machine" ] &&
+       [ "$onie_machine" != "accton_omp800"] &&
        [ "$onie_machine" != "accton_omp800_fc"] &&
        [ "$onie_machine" != "accton_omp800_lc"]; then
         fail=yes
@@ -13,3 +14,19 @@ check_machine_image()
         fail=yes
     fi
 }
+
+refresh_image_machine_conf()
+{
+    chassisinfo_lib="./chassisinfo-platform"
+    if [ -r "$chassisinfo_lib" ] ; then
+        . $chassisinfo_lib
+        accton_chassisinfo_load
+        sed -i -e "s/accton_omp800/${ACCTON_CHASSIS_MACHINE}/g" ./machine.conf
+        . ./machine.conf
+    else
+        echo "ERROR: $chassisinfo_lib file is missing."
+        exit 1
+    fi
+}
+
+refresh_image_machine_conf

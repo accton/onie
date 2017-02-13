@@ -1,0 +1,33 @@
+
+accton_chassisinfo_load()
+{
+    i2cset -y 0 0x76 0 0x4 >/dev/null 2>&1
+    # read board info
+    reg=$(i2cget -y 0 0x60 0x2 2>/dev/null)
+    i2cset -y 0 0x76 0 0 >/dev/null 2>&1
+
+    if [ $(( ($reg & 0x80) >> 7 )) -eq 1 ] ; then
+        ACCTON_CHASSIS_CPU="b"
+    else
+        ACCTON_CHASSIS_CPU="a"
+    fi
+    if [ $(( ($reg & 0x10) >> 4 )) -eq 1 ] ; then
+        ACCTON_CHASSIS_CARD="fabric"
+        ACCTON_CHASSIS_MACHINE="accton_omp800_fc$cpu"
+    else
+        ACCTON_CHASSIS_CARD="line"
+        ACCTON_CHASSIS_MACHINE="accton_omp800_lc$cpu"
+    fi
+    if [ $(( ($reg & 0x8) >> 3 )) -eq 1 ] ; then
+        ACCTON_CHASSIS_SUB="lower"
+    else
+        ACCTON_CHASSIS_SUB="upper"
+    fi
+    accton_chassis_slot=$(( $reg & 0x7 ))
+
+    export ACCTON_CHASSIS_CPU
+    export ACCTON_CHASSIS_CARD
+    export ACCTON_CHASSIS_MACHINE
+    export ACCTON_CHASSIS_SUB
+    export ACCTON_CHASSIS_SLOT
+}

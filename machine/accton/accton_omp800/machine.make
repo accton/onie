@@ -23,6 +23,8 @@ endif
 # Accton Technology Corporation IANA number
 VENDOR_ID = 259
 
+UPDATER_IMAGE_PARTS_PLATFORM = $(MACHINEDIR)/rootconf/sysroot-lib-onie/chassisinfo-platform
+
 UEFI_ENABLE = yes
 PXE_EFI64_ENABLE = yes
 
