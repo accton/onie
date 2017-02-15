@@ -1,3 +1,1 @@
 driver-intel-igb.patch
-driver-igb-broadcom-phy.patch
-driver-igb-bcm54616-workaround.patch
