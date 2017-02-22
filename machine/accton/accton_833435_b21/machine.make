@@ -30,10 +30,6 @@ I2CTOOLS_SYSEEPROM = no
 # Console parameters
 CONSOLE_DEV = 1
 
-# Specify Linux kernel version
-LINUX_VERSION		= 3.2
-LINUX_MINOR_VERSION	= 69
-
 #-------------------------------------------------------------------------------
 #
 # Local Variables:
