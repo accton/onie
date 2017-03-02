@@ -13,12 +13,23 @@ PATH=/usr/bin:/usr/sbin:/bin:/sbin:/usr/local/accton/bin
 daemon="chassis"
 ARGS=""
 
+chassisd_dir=/usr/local/accton/bin
+[ -d $chassisd_dir ] || {
+    echo "ERROR: Chassis daemon directory not found: $chassisd_dir"
+    exit 1
+}
+
+cd $chassisd_dir
+for f in chassis chassis_client ; do
+    ln -f r$onie_machine_rev/$f $f
+done
+
 case $cmd in
     start)
         killall $daemon > /dev/null 2>&1
         log_begin_msg "Starting: $daemon"
         ifconfig lo up
-        cd /usr/local/accton/bin && ./$daemon $ARGS > /dev/null 2>&1
+        cd $chassisd_dir && ./$daemon $ARGS > /dev/null 2>&1
         log_end_msg
         ;;
     stop)
