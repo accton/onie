@@ -1,5 +1,9 @@
 eth0:0
 eth0:100
 eth0.100
+eth0:4088
+eth0.4088
+eth0:4091
+eth0.4091
 eth1
 eth2
