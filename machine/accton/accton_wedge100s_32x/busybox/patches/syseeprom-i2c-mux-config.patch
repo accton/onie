@@ -1,4 +1,4 @@
-Accton Wedge100SBR_32X has to configure MUX before accessing EEPROM
+Accton Wedge100S_32X has to configure MUX before accessing EEPROM
 
 diff --git a/miscutils/24cXX.c b/miscutils/24cXX.c
 index b448761..ada1d88 100644
