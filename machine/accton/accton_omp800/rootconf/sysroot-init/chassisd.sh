@@ -20,7 +20,7 @@ chassisd_dir=/usr/local/accton/bin
 }
 
 cd $chassisd_dir
-for f in chassis chassis_client ; do
+for f in chassis chassis_client chassis.conf ; do
     ln -f r$onie_machine_rev/$f $f
 done
 
