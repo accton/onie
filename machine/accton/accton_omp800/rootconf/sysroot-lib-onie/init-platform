@@ -16,9 +16,10 @@
 init_platform_pre_arch()
 {
     i2cset -y 0 0x76 0 0x4 >/dev/null 2>&1
-    # reset temperature values of CPU and switch ASIC to alarm boundary
-    i2cset -y 0 0x60 0x30 0x40 >/dev/null 2>&1
-    i2cset -y 0 0x60 0x31 0x52 >/dev/null 2>&1
+    # set temperature values of CPU and switch ASIC to 0 that fan will be
+    # controlled by machine itself
+    i2cset -y 0 0x60 0x30 0x0 >/dev/null 2>&1
+    i2cset -y 0 0x60 0x31 0x0 >/dev/null 2>&1
     i2cset -y 0 0x76 0 0 >/dev/null 2>&1
 
     chassisinfo_lib="/lib/onie/chassisinfo-platform"
