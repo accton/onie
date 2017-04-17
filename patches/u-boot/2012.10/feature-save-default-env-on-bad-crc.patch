@@ -91,7 +91,7 @@ index 57221ef..4bed603 100644
 +		goto free_and_exit;
 +	}
 +
-+	ret = spi_flash_read(env_flash, CONFIG_ENV_OFFSET, sizeof(env_t), (char *)env_ptr);
++	ret = spi_flash_read(env_flash, CONFIG_ENV_OFFSET, CONFIG_ENV_SIZE, (char *)env_ptr);
 +	if (ret) {
 +		printf("SPI Read Fail!\n");
 +		goto free_and_exit;
