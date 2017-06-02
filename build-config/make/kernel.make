@@ -2,6 +2,7 @@
 #
 #  Copyright (C) 2013,2014,2015,2017 Curt Brune <curt@cumulusnetworks.com>
 #  Copyright (C) 2016 Pankaj Bansal <pankajbansal3073@gmail.com>
+#  Copyright (C) 2017 david_yang <david_yang@accton.com>
 #
 #  SPDX-License-Identifier:     GPL-2.0
 #
@@ -96,8 +97,11 @@ LINUX_NEW_FILES	= \
 	    -type f -print -quit 2>/dev/null)
 endif
 
+$(PRECHECK_KERNEL_STAMP): $(KERNEL_SOURCE_STAMP) $(LINUX_NEW_FILES) $(LINUXDIR)/.config
+	$(Q) touch $@
+
 kernel-build: $(KERNEL_BUILD_STAMP)
-$(KERNEL_BUILD_STAMP): $(KERNEL_SOURCE_STAMP) $(LINUX_NEW_FILES) $(LINUXDIR)/.config | $(XTOOLS_BUILD_STAMP)
+$(KERNEL_BUILD_STAMP): $(PRECHECK_KERNEL_STAMP) | $(XTOOLS_BUILD_STAMP)
 	$(Q) rm -f $@ && eval $(PROFILE_STAMP)
 	$(Q) echo "==== Building cross linux ===="
 	$(Q) PATH='$(CROSSBIN):$(PATH)'		\

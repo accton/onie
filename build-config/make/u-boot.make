@@ -99,6 +99,17 @@ $(UBOOT_PATCH_STAMP): $(UBOOT_CMNPATCHDIR)/* $(UBOOT_SRCPATCHDIR)/* $(MACHINEDIR
 	$(Q) $(SCRIPTDIR)/cp-machine-patches $(UBOOT_PATCHDIR) $(MACHINEDIR)/u-boot/series	\
 		$(MACHINEDIR)/u-boot $(MACHINEROOT)/u-boot
 	$(Q) $(SCRIPTDIR)/apply-patch-series $(UBOOT_PATCHDIR)/series $(UBOOT_DIR)
+	$(Q) touch $@
+
+ifndef MAKE_CLEAN
+UBOOT_NEW = $(shell test -d $(UBOOT_DIR) && test -f $(UBOOT_BUILD_STAMP) && \
+	       find -L $(UBOOT_DIR) -newer $(UBOOT_BUILD_STAMP) -print -quit)
+endif
+
+$(PRECHECK_UBOOT_STAMP): $(UBOOT_PATCH_STAMP) $(UBOOT_NEW)
+	$(Q) touch $@
+
+$(PREBUILD_UBOOT_STAMP): $(PRECHECK_STAMP)
 	$(Q) echo "#include <version.h>" > $(UBOOT_DIR)/include/configs/onie_version.h
 	$(Q) echo "#define ONIE_VERSION \
 		\"onie_version=$(LSB_RELEASE_TAG)\\0\"	\
@@ -119,12 +130,7 @@ $(UBOOT_PATCH_STAMP): $(UBOOT_CMNPATCHDIR)/* $(UBOOT_SRCPATCHDIR)/* $(MACHINEDIR
 		>> $(UBOOT_DIR)/include/configs/onie_version.h
 	$(Q) touch $@
 
-ifndef MAKE_CLEAN
-UBOOT_NEW = $(shell test -d $(UBOOT_DIR) && test -f $(UBOOT_BUILD_STAMP) && \
-	       find -L $(UBOOT_DIR) -newer $(UBOOT_BUILD_STAMP) -print -quit)
-endif
-
-$(UBOOT_IMAGE): $(UBOOT_PATCH_STAMP) $(UBOOT_NEW) | $(XTOOLS_BUILD_STAMP)
+$(UBOOT_IMAGE): $(PREBUILD_STAMP) | $(XTOOLS_BUILD_STAMP)
 	$(Q) echo "==== Building u-boot ($(UBOOT_MACHINE)) ===="
 	$(Q) PATH='$(CROSSBIN):$(PATH)' $(MAKE) -C $(UBOOT_DIR)		\
 		CROSS_COMPILE=$(CROSSPREFIX) O=$(UBOOT_BUILD_DIR)/$(UBOOT_MACHINE) \

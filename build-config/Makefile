@@ -342,6 +342,7 @@ ifeq ($(XTOOLS_ENABLE),yes)
   include make/xtools.make
 endif
 include make/sysroot.make
+include make/preprocess.make
 include make/kernel.make
 ifeq ($(UBOOT_ENABLE),yes)
   include make/u-boot.make

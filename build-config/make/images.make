@@ -239,8 +239,39 @@ $(SYSROOT_CHECK_STAMP): $(PACKAGES_INSTALL_STAMPS)
 RUNTIME_ONIE_MACHINE	?= $(MACHINE)
 RUNTIME_ONIE_PLATFORM	?= $(ARCH)-$(RUNTIME_ONIE_MACHINE)-r$(MACHINE_REV)
 
+$(PRECHECK_SYSROOT_STAMP): $(SYSROOT_CHECK_STAMP)
+	$(Q) touch $@
+
+$(PREBUILD_SYSROOT_STAMP): $(PRECHECK_STAMP)
+	$(Q) rm -f $(LSB_RELEASE_FILE)
+	$(Q) echo "DISTRIB_ID=onie" >> $(LSB_RELEASE_FILE)
+	$(Q) echo "DISTRIB_RELEASE=$(LSB_RELEASE_TAG)" >> $(LSB_RELEASE_FILE)
+	$(Q) echo "DISTRIB_DESCRIPTION=Open Network Install Environment" >> $(LSB_RELEASE_FILE)
+	$(Q) rm -f $(OS_RELEASE_FILE)
+	$(Q) echo "NAME=\"onie\"" >> $(OS_RELEASE_FILE)
+	$(Q) echo "VERSION=\"$(LSB_RELEASE_TAG)\"" >> $(OS_RELEASE_FILE)
+	$(Q) echo "ID=linux" >> $(OS_RELEASE_FILE)
+	$(Q) rm -f $(MACHINE_CONF)
+	$(Q) echo "onie_version=$(LSB_RELEASE_TAG)" >> $(MACHINE_CONF)
+	$(Q) echo "onie_vendor_id=$(VENDOR_ID)" >> $(MACHINE_CONF)
+	$(Q) echo "onie_platform=$(RUNTIME_ONIE_PLATFORM)" >> $(MACHINE_CONF)
+	$(Q) echo "onie_machine=$(RUNTIME_ONIE_MACHINE)" >> $(MACHINE_CONF)
+	$(Q) echo "onie_machine_rev=$(MACHINE_REV)" >> $(MACHINE_CONF)
+	$(Q) echo "onie_arch=$(ARCH)" >> $(MACHINE_CONF)
+	$(Q) echo "onie_config_version=$(ONIE_CONFIG_VERSION)" >> $(MACHINE_CONF)
+	$(Q) echo "onie_build_date=\"$(ONIE_BUILD_DATE)\"" >> $(MACHINE_CONF)
+	$(Q) echo "onie_partition_type=$(PARTITION_TYPE)" >> $(MACHINE_CONF)
+	$(Q) echo "onie_kernel_version=$(LINUX_RELEASE)" >> $(MACHINE_CONF)
+	$(Q) echo "onie_firmware=$(FIRMWARE_TYPE)" >> $(MACHINE_CONF)
+	$(Q) echo "onie_switch_asic=$(SWITCH_ASIC_VENDOR)" >> $(MACHINE_CONF)
+	$(Q) echo "onie_skip_ethmgmt_macs=$(SKIP_ETHMGMT_MACS)" >> $(MACHINE_CONF)
+ifeq ($(GRUB_ENABLE),yes)
+	$(Q) echo "onie_grub_image_name=$(GRUB_IMAGE_NAME)" >> $(MACHINE_CONF)
+endif
+	$(Q) touch $@
+
 sysroot-complete: $(SYSROOT_COMPLETE_STAMP)
-$(SYSROOT_COMPLETE_STAMP): $(SYSROOT_CHECK_STAMP)
+$(SYSROOT_COMPLETE_STAMP): $(PREBUILD_STAMP)
 	$(Q) rm -f $(SYSROOTDIR)/linuxrc
 	$(Q) cd $(ROOTCONFDIR) && $(SCRIPTDIR)/install-rootfs.sh default $(SYSROOTDIR)
 	$(Q) if [ -d $(ROOTCONFDIR)/$(ROOTFS_ARCH)/sysroot-lib-onie ] ; then \
@@ -266,31 +297,6 @@ $(SYSROOT_COMPLETE_STAMP): $(SYSROOT_CHECK_STAMP)
 		cp -a $(MACHINEDIR)/rootconf/sysroot-rcK/* $(SYSROOTDIR)/etc/rc6.d ; \
 	     fi
 	$(Q) cd $(SYSROOTDIR) && ln -fs sbin/init ./init
-	$(Q) rm -f $(LSB_RELEASE_FILE)
-	$(Q) echo "DISTRIB_ID=onie" >> $(LSB_RELEASE_FILE)
-	$(Q) echo "DISTRIB_RELEASE=$(LSB_RELEASE_TAG)" >> $(LSB_RELEASE_FILE)
-	$(Q) echo "DISTRIB_DESCRIPTION=Open Network Install Environment" >> $(LSB_RELEASE_FILE)
-	$(Q) rm -f $(OS_RELEASE_FILE)
-	$(Q) echo "NAME=\"onie\"" >> $(OS_RELEASE_FILE)
-	$(Q) echo "VERSION=\"$(LSB_RELEASE_TAG)\"" >> $(OS_RELEASE_FILE)
-	$(Q) echo "ID=linux" >> $(OS_RELEASE_FILE)
-	$(Q) rm -f $(MACHINE_CONF)
-	$(Q) echo "onie_version=$(LSB_RELEASE_TAG)" >> $(MACHINE_CONF)
-	$(Q) echo "onie_vendor_id=$(VENDOR_ID)" >> $(MACHINE_CONF)
-	$(Q) echo "onie_platform=$(RUNTIME_ONIE_PLATFORM)" >> $(MACHINE_CONF)
-	$(Q) echo "onie_machine=$(RUNTIME_ONIE_MACHINE)" >> $(MACHINE_CONF)
-	$(Q) echo "onie_machine_rev=$(MACHINE_REV)" >> $(MACHINE_CONF)
-	$(Q) echo "onie_arch=$(ARCH)" >> $(MACHINE_CONF)
-	$(Q) echo "onie_config_version=$(ONIE_CONFIG_VERSION)" >> $(MACHINE_CONF)
-	$(Q) echo "onie_build_date=\"$(ONIE_BUILD_DATE)\"" >> $(MACHINE_CONF)
-	$(Q) echo "onie_partition_type=$(PARTITION_TYPE)" >> $(MACHINE_CONF)
-	$(Q) echo "onie_kernel_version=$(LINUX_RELEASE)" >> $(MACHINE_CONF)
-	$(Q) echo "onie_firmware=$(FIRMWARE_TYPE)" >> $(MACHINE_CONF)
-	$(Q) echo "onie_switch_asic=$(SWITCH_ASIC_VENDOR)" >> $(MACHINE_CONF)
-	$(Q) echo "onie_skip_ethmgmt_macs=$(SKIP_ETHMGMT_MACS)" >> $(MACHINE_CONF)
-       ifeq ($(GRUB_ENABLE),yes)
-	  $(Q) echo "onie_grub_image_name=$(GRUB_IMAGE_NAME)" >> $(MACHINE_CONF)
-       endif
 	$(Q) cp $(LSB_RELEASE_FILE) $(SYSROOTDIR)/etc/lsb-release
 	$(Q) cp $(OS_RELEASE_FILE) $(SYSROOTDIR)/etc/os-release
 	$(Q) cp $(MACHINE_CONF) $(SYSROOTDIR)/etc/machine.conf
