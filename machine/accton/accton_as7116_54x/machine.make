@@ -23,6 +23,8 @@ endif
 # Accton Technology Corporation IANA number
 VENDOR_ID = 259
 
+UEFI_ENABLE = yes
+
 I2CTOOLS_ENABLE = yes
 I2CTOOLS_SYSEEPROM = no
 
