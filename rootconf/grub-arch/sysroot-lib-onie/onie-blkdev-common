@@ -1,5 +1,5 @@
 #  Copyright (C) 2014-2015 Curt Brune <curt@cumulusnetworks.com>
-#  Copyright (C) 2015-2016 david_yang <david_yang@accton.com>
+#  Copyright (C) 2015,2016,2017 david_yang <david_yang@accton.com>
 #
 #  SPDX-License-Identifier:     GPL-2.0
 
@@ -107,6 +107,42 @@ onie_get_running_firmware()
         echo -n "uefi" && return
     fi
     echo -n "bios"
+}
+
+#
+# verify the given partition table
+#
+verify_partition_table()
+{
+    local DEV="$1"
+    local gdisk_cmd=
+    local run_gdisk=
+
+    [ -x /usr/bin/gdisk -o -b "$DEV" ] || return 0
+    local gdisk_log=$(echo -e "v\nq\n" | gdisk "$DEV" 2>&1)
+
+    echo "$gdisk_log" | grep -q "No problems found" && return 0
+    echo "$gdisk_log" | grep -qE "backup partition table is invalid|main header's self-pointer" && {
+        run_gdisk=yes
+    }
+    echo "$gdisk_log" | grep -qE "use the 'e'|The 'e' option" && {
+        gdisk_cmd="${gdisk_cmd}x\ne\n"
+        run_gdisk=yes
+    }
+    echo "$gdisk_log" | grep -qE "header \('d' on" && {
+        gdisk_cmd="${gdisk_cmd}r\nd\n"
+        run_gdisk=yes
+    }
+    echo "$gdisk_log" | grep -qE "the 'b' or 'd'|header \('b' on|main partition table is invalid" && {
+        gdisk_cmd="${gdisk_cmd}r\nb\n"
+        run_gdisk=yes
+    }
+    [ "$run_gdisk" = "yes" ] && {
+        gdisk_cmd="${gdisk_cmd}w\ny\ny\ny\n"
+        echo "Fixing partition table problems on $DEV ..."
+        echo -e "$gdisk_cmd" | gdisk "$DEV" 2>&1 | tail -n1
+    }
+    return 0
 }
 
 #

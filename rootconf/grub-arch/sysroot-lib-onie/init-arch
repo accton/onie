@@ -1,7 +1,7 @@
 # Early boot time initializations for x86_64 architectures
 
 #  Copyright (C) 2014 Curt Brune <curt@cumulusnetworks.com>
-#  Copyright (C) 2014 david_yang <david_yang@accton.com>
+#  Copyright (C) 2014,2017 david_yang <david_yang@accton.com>
 #
 #  SPDX-License-Identifier:     GPL-2.0
 
@@ -38,6 +38,9 @@ init_onie_boot() {
 LABEL=$onie_boot_label	$onie_boot_mnt	$onie_boot_fs_type	defaults,rw,errors=remount-ro	0	1
 EOF
     ) > /etc/fstab
+
+    # Verify the partition table for errors
+    verify_partition_table "$(onie_get_boot_disk)"
 
     # Check the filesystem for errors
     run_fsck $device || {
